@@ -1317,7 +1317,7 @@ loadEvents();
       return `<button type="button" class="day-event" data-id="${e.id}">
         <span class="day-event-bar ${cls}"></span>
         <span class="day-event-main">
-          <span class="day-event-title">${e.category==="Viajes"?"🧳 ":""}${e.title||"Evento"}</span>
+          <span class="day-event-title">${e.category==="Viajes"?"🧳 ":""}${e.away?"✈️ ":""}${e.title||"Evento"}</span>
           <span class="day-event-meta">${meta}</span>
         </span>
         <span class="day-event-person ${cls}">${displayPerson(e.person)}</span>
@@ -1381,8 +1381,8 @@ loadEvents();
         b.type="button";
         b.className="cal-event "+pclass(e.person);
         const travelIcon=e.category==="Viajes"?"🧳 ":"";
-        const awayIcon=e.away?" ✈️":"";
-        b.textContent=travelIcon+(e.title||"Evento")+awayIcon;
+        const awayIcon=e.away?"✈️ ":"";
+        b.textContent=travelIcon+awayIcon+(e.title||"Evento");
         b.title=displayPerson(e.person)+" · "+(e.title||"Evento")+(e.away?" · ✈️ Duerme fuera":"");
         b.onclick=ev=>{
           ev.stopPropagation();
