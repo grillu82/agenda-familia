@@ -60,8 +60,10 @@ button{cursor:pointer}
 .tag.conditional{background:#eee7ff;color:#6241a8}
 .tag.conflict{background:var(--danger);color:var(--danger-ink)}
 .tag.tight{background:var(--warn);color:var(--warn-ink)}
-.event-actions{display:flex;gap:5px}
-.icon-btn{border:0;background:#eef3f8;border-radius:12px;padding:8px;line-height:1}
+.event-actions{display:flex;gap:5px;align-items:center}
+.icon-btn{border:0;background:#eef3f8;border-radius:12px;padding:8px;line-height:1;cursor:pointer}
+.calendar-btn{border:0;background:#eef7ff;color:#135f96;border-radius:12px;padding:8px 10px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap}
+@media(max-width:520px){.event-top{flex-wrap:wrap}.event-actions{width:100%;justify-content:flex-end;padding-left:42px}.calendar-btn{padding:8px 9px}}
 .empty{background:#fff;border:1px dashed #cdd9e7;border-radius:20px;padding:30px 18px;text-align:center;color:var(--muted)}
 .fab{position:fixed;right:max(18px,calc((100vw - 760px)/2 + 18px));bottom:24px;width:58px;height:58px;border-radius:50%;border:0;background:#1264a3;color:#fff;font-size:30px;box-shadow:0 10px 25px rgba(18,100,163,.28);z-index:9}
 .modal-backdrop{position:fixed;inset:0;background:rgba(16,33,58,.38);z-index:20;display:none;align-items:flex-end;justify-content:center}
@@ -330,12 +332,48 @@ function render(){
               ${status==="conflict"?'<span class="tag conflict">SOLAPAMIENTO</span>':status==="tight"?'<span class="tag tight">TIEMPO JUSTO</span>':""}
             </div>
           </div>
-          <div class="event-actions"><button class="icon-btn edit-btn" data-id="${e.id}">✏️</button></div>
+          <div class="event-actions"><button class="calendar-btn calendar-add-btn" data-id="${e.id}" title="Añadir este evento a mi calendario">📅 Añadir</button><button class="icon-btn edit-btn" data-id="${e.id}" title="Editar evento">✏️</button></div>
         </div></div>`;
     }).join("");
     return `<section class="day"><div class="day-head"><span class="date">${daynum}</span><span class="weekday">${weekday}</span></div>${cards}</section>`;
   }).join(""):`<div class="empty">No hay eventos en este mes para este filtro.</div>`;
   document.querySelectorAll(".edit-btn").forEach(b=>b.onclick=()=>openEvent(b.dataset.id));
+  document.querySelectorAll(".calendar-add-btn").forEach(b=>b.onclick=()=>addToCalendar(b.dataset.id));
+}
+
+
+function icsEscape(v){
+  return String(v||"").replace(/\\/g,"\\\\").replace(/\n/g,"\\n").replace(/,/g,"\\,").replace(/;/g,"\\;");
+}
+function icsDate(date){return date.replaceAll("-","")}
+function icsDateTime(date,time){return date.replaceAll("-","")+"T"+(time||"00:00").replace(":","")+"00"}
+function nextDate(date){
+  const d=new Date(date+"T12:00:00"); d.setDate(d.getDate()+1);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function addToCalendar(id){
+  const e=state.events.find(x=>x.id===id); if(!e)return;
+  const now=new Date();
+  const stamp=now.getUTCFullYear()+String(now.getUTCMonth()+1).padStart(2,"0")+String(now.getUTCDate()).padStart(2,"0")+"T"+String(now.getUTCHours()).padStart(2,"0")+String(now.getUTCMinutes()).padStart(2,"0")+String(now.getUTCSeconds()).padStart(2,"0")+"Z";
+  const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Familia Suarez//Agenda Familiar//ES","CALSCALE:GREGORIAN","METHOD:PUBLISH","BEGIN:VEVENT",`UID:${icsEscape(e.id)}@agenda-familia`,`DTSTAMP:${stamp}`];
+  if(e.allDay || !e.startTime){
+    lines.push(`DTSTART;VALUE=DATE:${icsDate(e.date)}`);
+    lines.push(`DTEND;VALUE=DATE:${icsDate(nextDate(e.date))}`);
+  }else{
+    lines.push(`DTSTART;TZID=Europe/Madrid:${icsDateTime(e.date,e.startTime)}`);
+    if(e.endTime) lines.push(`DTEND;TZID=Europe/Madrid:${icsDateTime(e.date,e.endTime)}`);
+  }
+  lines.push(`SUMMARY:${icsEscape(e.title)}`);
+  if(e.location) lines.push(`LOCATION:${icsEscape(e.location)}`);
+  const desc=[e.person?`Persona: ${e.person}`:"",e.category?`Categoría: ${e.category}`:"",e.conditional?"Evento condicional":"",e.notes||""].filter(Boolean).join("\\n");
+  if(desc) lines.push(`DESCRIPTION:${icsEscape(desc)}`);
+  lines.push("END:VEVENT","END:VCALENDAR");
+  const blob=new Blob([lines.join("\r\n")+"\r\n"],{type:"text/calendar;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url; a.download=`${(e.title||"evento").replace(/[^a-z0-9áéíóúüñ _-]/gi,"").trim().replace(/\s+/g,"-")}.ics`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
 }
 
 function escapeHtml(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
