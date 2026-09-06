@@ -154,15 +154,15 @@ textarea{min-height:82px;resize:vertical}
 <div id="settingsModal" class="modal-backdrop">
   <div class="modal">
     <h2>Compartir la agenda</h2>
-    <p>La app funciona ya en este dispositivo. Para que Sergio, María y Martina vean y editen <b>la misma agenda</b>, conecta un proyecto de Supabase.</p>
+    <p>La app ya viene conectada a vuestra agenda compartida de Supabase. Sergio, María y Martina veréis y editaréis <b>la misma agenda</b> desde cualquier dispositivo que abra esta web.</p>
     <div class="settings-box">
       <div class="field"><label>Supabase Project URL</label><input id="supabaseUrl" placeholder="https://xxxxx.supabase.co"></div>
       <div class="field"><label>Supabase anon key</label><textarea id="supabaseKey" placeholder="eyJ..."></textarea></div>
       <div class="row">
         <button id="saveSettings" class="primary">Guardar conexión</button>
-        <button id="disconnectSettings" class="secondary">Usar solo este móvil</button>
+        <button id="disconnectSettings" class="secondary">Desconectar de la agenda compartida</button>
       </div>
-      <p class="small">Después de ejecutar el archivo <b>supabase_setup.sql</b> una vez en Supabase, basta con poner aquí la URL y la anon key en cada móvil.</p>
+      <p class="small">La conexión ya está preconfigurada. Estos datos pueden mantenerse aquí solo como referencia técnica.</p>
     </div>
     <div class="row">
       <button id="exportBtn" class="secondary">Exportar copia JSON</button>
@@ -224,8 +224,8 @@ const state = {
   filter:"Todos",
   month:new Date("2026-09-01T12:00:00"),
   remote:false,
-  supabaseUrl:localStorage.getItem("family_supabase_url")||"",
-  supabaseKey:localStorage.getItem("family_supabase_key")||""
+  supabaseUrl:localStorage.getItem("family_supabase_url")||"https://gmmnbaweuycouhgsrzfk.supabase.co",
+  supabaseKey:localStorage.getItem("family_supabase_key")||"sb_publishable_GXhOOJ_LmLm6zhkdardL8Q_luvm72Ce"
 };
 
 const $=s=>document.querySelector(s);
@@ -359,20 +359,43 @@ function openEvent(id=null){
   $("#eventModal").classList.add("show");
 }
 $("#addBtn").onclick=()=>openEvent();
+// Al escribir una hora, cambiamos visualmente "Todo el día" a No.
+["#startTime","#endTime"].forEach(sel=>$(sel).addEventListener("input",()=>{
+  if($(sel).value) $("#allDay").value="false";
+}));
+$("#allDay").addEventListener("change",()=>{
+  if($("#allDay").value==="true"){ $("#startTime").value=""; $("#endTime").value=""; }
+});
 $("#cancelEvent").onclick=()=>$("#eventModal").classList.remove("show");
 $("#eventModal").onclick=e=>{if(e.target.id==="eventModal")$("#eventModal").classList.remove("show")}
 
 $("#eventForm").onsubmit=async ev=>{
   ev.preventDefault();
   const id=$("#eventId").value||uid();
+  const startTime=$("#startTime").value;
+  const endTime=$("#endTime").value;
+  // Si se informa una hora, el evento deja de ser automáticamente "Todo el día".
+  // Esto evita que el formulario guarde las horas pero el listado siga mostrando "Todo el día".
+  const allDay=(!startTime&&!endTime)&&$("#allDay").value==="true";
   const obj={id,title:$("#title").value.trim(),person:$("#person").value,category:$("#category").value,date:$("#date").value,
-    allDay:$("#allDay").value==="true",startTime:$("#startTime").value,endTime:$("#endTime").value,location:$("#location").value.trim(),
+    allDay,startTime,endTime,location:$("#location").value.trim(),
     away:$("#away").value==="true",conditional:$("#conditional").value==="true",notes:$("#notes").value.trim()};
   const ix=state.events.findIndex(x=>x.id===id);
   try{
-    if(state.remote){if(ix>=0)await updateRemote(obj);else await saveRemote(obj)}
-    if(ix>=0)state.events[ix]=obj;else state.events.push(obj);
-    if(!state.remote)saveLocal();
+    if(state.remote){
+      if(ix>=0)await updateRemote(obj);else await saveRemote(obj);
+      // Recargamos el registro desde Supabase para que la pantalla refleje exactamente lo guardado.
+      const fresh=await api("events?id=eq."+encodeURIComponent(id)+"&select=*");
+      if(fresh&&fresh[0]){
+        const saved=fromDb(fresh[0]);
+        if(ix>=0)state.events[ix]=saved;else state.events.push(saved);
+      } else {
+        if(ix>=0)state.events[ix]=obj;else state.events.push(obj);
+      }
+    } else {
+      if(ix>=0)state.events[ix]=obj;else state.events.push(obj);
+      saveLocal();
+    }
     $("#eventModal").classList.remove("show"); render();
   }catch(e){alert("No se pudo guardar: "+e.message)}
 };
