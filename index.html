@@ -501,6 +501,120 @@ body.calendar-mode main{
 }
 </style>
 
+
+<style id="assistant-modal-fix">
+.quick-modal-card{
+  width:min(640px, calc(100% - 24px)) !important;
+  border-radius:22px !important;
+  padding:18px !important;
+  max-height:88dvh !important;
+  overflow:auto !important;
+}
+.quick-modal-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+.quick-modal-head h2{margin:0}
+.icon-btn{
+  width:40px;height:40px;border:1px solid var(--line);border-radius:12px;
+  background:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:800;
+}
+.event-assistant-btn{
+  width:100%;
+  margin:0 0 14px;
+  border:0;
+  border-radius:14px;
+  padding:11px 14px;
+  font-weight:800;
+  font-size:14px;
+  background:linear-gradient(135deg,#6d5dfc,#9b5de5);
+  color:#fff;
+  box-shadow:0 8px 20px rgba(109,93,252,.18);
+}
+@media(max-width:700px){
+  .quick-modal-card{
+    width:100% !important;
+    max-width:none !important;
+    border-radius:22px 22px 0 0 !important;
+    margin:0 !important;
+    max-height:82dvh !important;
+  }
+  .quick-box textarea{
+    font-size:16px !important;
+    min-height:120px;
+  }
+  .event-assistant-btn{
+    position:sticky;
+    top:0;
+    z-index:9;
+  }
+}
+</style>
+
+
+<style id="alerts-position-fix">
+#alerts{
+  margin:12px 0 14px !important;
+}
+body.calendar-mode #alerts{
+  display:block !important;
+}
+</style>
+
+
+<style id="install-modal-fix">
+#installModal{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  background:rgba(15,23,42,.48);
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+}
+#installModal.show{
+  display:flex !important;
+}
+.install-modal-card{
+  width:min(520px, calc(100% - 16px)) !important;
+  max-height:88dvh !important;
+  overflow:auto !important;
+  background:#fff;
+  border-radius:22px !important;
+  padding:18px !important;
+  box-shadow:0 24px 60px rgba(15,23,42,.24);
+}
+.install-modal-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+.install-modal-head h2{
+  margin:0;
+}
+@media(max-width:700px){
+  #installModal{
+    align-items:flex-end;
+    padding:0;
+  }
+  .install-modal-card{
+    width:100% !important;
+    max-width:none !important;
+    border-radius:22px 22px 0 0 !important;
+    margin:0 !important;
+    max-height:82dvh !important;
+    padding-bottom:max(18px, env(safe-area-inset-bottom)) !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -535,6 +649,8 @@ body.calendar-mode main{
     <button type="button" id="calendarViewBtn">🗓 Calendario</button>
   </div>
 
+  <div id="alerts" class="alerts"></div>
+
   <div id="calendarView">
     <div class="calendar-shell">
       <div class="calendar-head">
@@ -544,7 +660,6 @@ body.calendar-mode main{
     </div>
   </div>
 
-  <div id="alerts" class="alerts"></div>
   <h2 class="section-title" id="agendaTitle">Agenda</h2>
   <div id="agenda"></div>
 </div>
@@ -554,6 +669,7 @@ body.calendar-mode main{
 <div id="eventModal" class="modal-backdrop">
   <div class="modal">
     <h2 id="eventModalTitle">Añadir evento</h2>
+    <button id="eventAssistantBtn" class="event-assistant-btn" type="button">✨ Rellenar con asistente</button>
     <form id="eventForm">
       <p class="required-note"><span class="req">*</span> Campos obligatorios</p>
       <input type="hidden" id="eventId">
@@ -1007,40 +1123,40 @@ document.addEventListener("DOMContentLoaded",()=>{
 </script>
 
 
-<div class="modal" id="quickModal">
-  <div class="modal-card">
-    <div class="modal-head">
-      <h2>✨ Crear evento rápido</h2>
-      <button class="icon-btn" id="closeQuick" type="button">✕</button>
+
+<div id="quickModal" class="modal-backdrop">
+  <div class="modal quick-modal-card" role="dialog" aria-modal="true" aria-labelledby="quickModalTitle">
+    <div class="quick-modal-head">
+      <h2 id="quickModalTitle">✨ Asistente de eventos</h2>
+      <button class="icon-btn" id="closeQuick" type="button" aria-label="Cerrar">✕</button>
     </div>
     <div class="quick-box">
       <textarea id="quickText" placeholder="Ej.: Martina entrenamiento mañana de 18:30 a 20:00 en Olivares"></textarea>
       <div class="quick-actions">
         <button type="button" id="voiceQuick">🎙️ Dictar</button>
-        <button type="button" class="primary" id="interpretQuick">✨ Interpretar</button>
+        <button type="button" class="primary" id="interpretQuick">✨ Interpretar y rellenar</button>
       </div>
       <div class="quick-hint">
-        Entiende personas, hoy/mañana/pasado mañana, días de la semana, fechas como “23 de septiembre”,
-        horas como “a las 17:30” o “de 18:30 a 20:00”, lugares con “en…” y expresiones como
-        “todos los lunes” o “cada miércoles”. Siempre podrás revisar el formulario antes de guardar.
+        Escribe o dicta el evento. El asistente intentará identificar persona, fecha, horas,
+        lugar y repetición semanal. Después podrás revisar todos los campos antes de guardar.
       </div>
     </div>
   </div>
 </div>
 
-
 <script id="quick-create-local">
 (function(){
-  const $q=s=>document.querySelector(s);
+  const q=s=>document.querySelector(s);
   const MONTHS={
     enero:0,febrero:1,marzo:2,abril:3,mayo:4,junio:5,julio:6,
     agosto:7,septiembre:8,setiembre:8,octubre:9,noviembre:10,diciembre:11
   };
   const DAYS={domingo:0,lunes:1,martes:2,"miércoles":3,miercoles:3,jueves:4,viernes:5,"sábado":6,sabado:6};
+  let assistantOrigin="main";
 
   function pad(n){return String(n).padStart(2,"0")}
   function iso(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
-  function normalize(s){return String(s||"").trim().replace(/\s+/g," ")}
+  function norm(s){return String(s||"").trim().replace(/\s+/g," ")}
   function nextWeekday(base,target){
     const d=new Date(base); let diff=(target-d.getDay()+7)%7;
     if(diff===0) diff=7;
@@ -1058,7 +1174,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     if(m){
       let y=m[3]?+m[3]:now.getFullYear();
       let dd=new Date(y,MONTHS[m[2]],+m[1]);
-      if(!m[3] && dd < d) dd.setFullYear(y+1);
+      if(!m[3] && dd<d) dd.setFullYear(y+1);
       return iso(dd);
     }
     m=low.match(/\b(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?\b/);
@@ -1070,14 +1186,14 @@ document.addEventListener("DOMContentLoaded",()=>{
     for(const [name,num] of Object.entries(DAYS)){
       if(new RegExp("\\b"+name+"\\b").test(low)) return iso(nextWeekday(d,num));
     }
-    return iso(d);
+    return "";
   }
   function parseTimes(s){
     const low=s.toLowerCase().replace(/\./g,":");
     let m=low.match(/\bde\s+(\d{1,2})(?::(\d{2}))?\s*(?:h|horas?)?\s+a\s+(?:las\s+)?(\d{1,2})(?::(\d{2}))?/);
-    if(m) return {start:pad(+m[1])+":"+pad(+(m[2]||0)),end:pad(+m[3])+":"+pad(+(m[4]||0))};
+    if(m)return {start:pad(+m[1])+":"+pad(+(m[2]||0)),end:pad(+m[3])+":"+pad(+(m[4]||0))};
     m=low.match(/\ba\s+las?\s+(\d{1,2})(?::(\d{2}))?/);
-    if(m) return {start:pad(+m[1])+":"+pad(+(m[2]||0)),end:""};
+    if(m)return {start:pad(+m[1])+":"+pad(+(m[2]||0)),end:""};
     m=low.match(/\b(\d{1,2}):(\d{2})\b/);
     return m?{start:pad(+m[1])+":"+m[2],end:""}:{start:"",end:""};
   }
@@ -1086,21 +1202,23 @@ document.addEventListener("DOMContentLoaded",()=>{
     if(/\bmartina\b/.test(low))return "Martina";
     if(/\bmar[ií]a\b/.test(low))return "María";
     if(/\bsergio\b/.test(low))return "Sergio";
-    if(/\btrabajo\b/.test(low))return "Familia"; // valor interno compatible con Supabase
-    return "Sergio";
+    if(/\btrabajo\b/.test(low))return "Familia";
+    return "";
   }
   function parseLocation(s){
-    // Last "en X", but avoid "en septiembre/octubre..." and time/date contexts.
     const matches=[...s.matchAll(/\ben\s+([^,.;]+?)(?=\s+(?:hoy|mañana|pasado mañana|el\s+(?:lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)|a\s+las|de\s+\d{1,2}(?::\d{2})?\s+a)|$)/gi)];
     if(!matches.length)return "";
     let loc=matches[matches.length-1][1].trim();
     if(/^(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)\b/i.test(loc))return "";
     return loc;
   }
-  function weekly(s){return /\b(todos?|todas?)\s+los?\b|\bcada\s+(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)\b|\bse\s+repite\s+semanalmente\b/i.test(s)}
-  function titleFrom(s,person,loc){
+  function isWeekly(s){
+    return /\b(todos?|todas?)\s+los?\b|\bcada\s+(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)\b|\bse\s+repite\s+semanalmente\b/i.test(s);
+  }
+  function makeTitle(s,person,loc){
     let t=s;
-    t=t.replace(new RegExp("\\b"+person.replace("í","[ií]")+"\\b","i"),"");
+    if(person && person!=="Familia") t=t.replace(new RegExp("\\b"+person.replace("í","[ií]")+"\\b","i"),"");
+    t=t.replace(/\btrabajo\b/gi,"");
     t=t.replace(/\b(hoy|mañana|pasado mañana)\b/gi,"");
     t=t.replace(/\b(el\s+)?(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)\b/gi,"");
     t=t.replace(/\b(todos?|todas?)\s+los?\s+(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)\b/gi,"");
@@ -1110,50 +1228,62 @@ document.addEventListener("DOMContentLoaded",()=>{
     t=t.replace(/\bde\s+\d{1,2}(?::\d{2})?\s*(?:h|horas?)?\s+a\s+(?:las\s+)?\d{1,2}(?::\d{2})?/gi,"");
     t=t.replace(/\ba\s+las?\s+\d{1,2}(?::\d{2})?/gi,"");
     if(loc)t=t.replace(new RegExp("\\ben\\s+"+loc.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"i"),"");
-    t=normalize(t.replace(/^[,;:\-\s]+|[,;:\-\s]+$/g,""));
+    t=norm(t.replace(/^[,;:\-\s]+|[,;:\-\s]+$/g,""));
     return t ? t.charAt(0).toUpperCase()+t.slice(1) : "Evento";
   }
-  function fillForm(data){
-    // Open normal event modal first.
-    try{
-      if(typeof openModal==="function") openModal();
-      else if(typeof openEventModal==="function") openEventModal();
-      else if(typeof openEdit==="function") openEdit(null);
-      else {
-        const m=$q("#eventModal"); if(m)m.classList.add("show");
-      }
-    }catch(e){const m=$q("#eventModal"); if(m)m.classList.add("show");}
-    setTimeout(()=>{
-      const set=(sel,val)=>{const el=$q(sel);if(el&&val!==undefined)el.value=val};
-      set("#title",data.title); set("#person",data.person); set("#date",data.date);
-      set("#start",data.start); set("#end",data.end); set("#location",data.location);
-      const all=$q("#allDay"); if(all)all.checked=!data.start;
-      const weeklyBox=$q("#weeklyRepeat"); if(weeklyBox)weeklyBox.checked=data.weekly;
-      const notes=$q("#notes"); if(notes && !notes.value) notes.value="";
-    },30);
+
+  function openAssistant(origin){
+    assistantOrigin=origin||"main";
+    const modal=q("#quickModal");
+    const input=q("#quickText");
+    if(!modal)return;
+    modal.classList.add("show");
+    setTimeout(()=>input?.focus(),80);
+  }
+  function closeAssistant(){q("#quickModal")?.classList.remove("show")}
+
+  function ensureEventFormOpen(){
+    if(!q("#eventModal")?.classList.contains("show")){
+      if(typeof openEvent==="function") openEvent();
+      else q("#eventModal")?.classList.add("show");
+    }
+  }
+  function fillEventForm(data){
+    ensureEventFormOpen();
+    if(data.title)q("#title").value=data.title;
+    if(data.person)q("#person").value=data.person;
+    if(data.date)q("#date").value=data.date;
+    if(data.start)q("#startTime").value=data.start;
+    if(data.end)q("#endTime").value=data.end;
+    if(data.location)q("#location").value=data.location;
+    if(data.start || data.end)q("#allDay").value="false";
+    if(q("#weeklyRepeat"))q("#weeklyRepeat").checked=!!data.weekly;
   }
   function interpret(){
-    const raw=normalize($q("#quickText")?.value);
+    const raw=norm(q("#quickText")?.value);
     if(!raw){alert("Escribe o dicta el evento.");return}
-    const person=parsePerson(raw), date=parseDate(raw), times=parseTimes(raw), loc=parseLocation(raw);
-    const data={person,date,start:times.start,end:times.end,location:loc,weekly:weekly(raw)};
-    data.title=titleFrom(raw,person,loc);
-    $q("#quickModal")?.classList.remove("show");
-    fillForm(data);
+    const person=parsePerson(raw), date=parseDate(raw), times=parseTimes(raw), location=parseLocation(raw);
+    const data={person,date,start:times.start,end:times.end,location,weekly:isWeekly(raw)};
+    data.title=makeTitle(raw,person,location);
+    closeAssistant();
+    fillEventForm(data);
   }
+
   document.addEventListener("DOMContentLoaded",()=>{
-    const modal=$q("#quickModal"), input=$q("#quickText");
-    $q("#quickCreateBtn")?.addEventListener("click",()=>{modal?.classList.add("show");setTimeout(()=>input?.focus(),50)});
-    $q("#closeQuick")?.addEventListener("click",()=>modal?.classList.remove("show"));
-    $q("#interpretQuick")?.addEventListener("click",interpret);
-    $q("#voiceQuick")?.addEventListener("click",()=>{
+    q("#quickCreateBtn")?.addEventListener("click",()=>openAssistant("main"));
+    q("#eventAssistantBtn")?.addEventListener("click",()=>openAssistant("event"));
+    q("#closeQuick")?.addEventListener("click",closeAssistant);
+    q("#quickModal")?.addEventListener("click",e=>{if(e.target.id==="quickModal")closeAssistant()});
+    q("#interpretQuick")?.addEventListener("click",interpret);
+    q("#voiceQuick")?.addEventListener("click",()=>{
+      const input=q("#quickText");
       const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
       if(!SR){
-        alert("El reconocimiento de voz directo no está disponible en este navegador. Puedes pulsar el micrófono del teclado del iPhone y dictar en la caja de texto.");
+        alert("En este navegador usa el micrófono del teclado del iPhone para dictar el texto.");
         input?.focus(); return;
       }
-      const r=new SR(); r.lang="es-ES"; r.interimResults=false; r.maxAlternatives=1;
-      const b=$q("#voiceQuick"); if(b)b.textContent="🎙️ Escuchando…";
+      const r=new SR();r.lang="es-ES";r.interimResults=false;r.maxAlternatives=1;
+      const b=q("#voiceQuick");if(b)b.textContent="🎙️ Escuchando…";
       r.onresult=e=>{if(input)input.value=e.results[0][0].transcript};
       r.onerror=()=>alert("No se pudo reconocer la voz. Puedes usar el dictado del teclado.");
       r.onend=()=>{if(b)b.textContent="🎙️ Dictar"};
@@ -1164,29 +1294,34 @@ document.addEventListener("DOMContentLoaded",()=>{
 </script>
 
 
-<div class="modal" id="installModal">
-  <div class="modal-card">
-    <div class="modal-head">
-      <h2>📲 Poner Familia MSM en inicio</h2>
-      <button class="icon-btn" id="closeInstall" type="button">✕</button>
+
+<div id="installModal" class="modal-backdrop">
+  <div class="modal install-modal-card" role="dialog" aria-modal="true" aria-labelledby="installModalTitle">
+    <div class="install-modal-head">
+      <h2 id="installModalTitle">📲 Añadir Familia MSM a inicio</h2>
+      <button class="icon-btn" id="closeInstall" type="button" aria-label="Cerrar">✕</button>
     </div>
+
     <div class="install-help" id="installHelp">
       <div id="iosInstallHelp" class="install-steps" style="display:none">
         <b>En iPhone:</b><br>
-        1. Pulsa el botón <b>Compartir</b> de Safari (cuadrado con flecha hacia arriba).<br>
-        2. Baja y toca <b>Añadir a pantalla de inicio</b>.<br>
-        3. Pulsa <b>Añadir</b>.<br><br>
-        Después tendrás Familia MSM como un icono más del iPhone.
+        1. Pulsa <b>Compartir</b> en Safari.<br>
+        2. Toca <b>Añadir a pantalla de inicio</b>.<br>
+        3. Pulsa <b>Añadir</b>.
       </div>
+
       <div id="androidInstallHelp" class="install-steps" style="display:none">
         <b>En Android:</b><br>
-        Si tu navegador permite instalación directa, pulsa <b>Instalar</b> en el aviso que aparecerá.
-        Si no aparece, abre el menú del navegador y elige <b>Añadir a pantalla de inicio</b> o <b>Instalar aplicación</b>.
+        Si el navegador permite instalación directa, pulsa <b>Instalar</b>.
+        Si no aparece, abre el menú del navegador y elige
+        <b>Añadir a pantalla de inicio</b> o <b>Instalar aplicación</b>.
       </div>
+
       <div id="desktopInstallHelp" class="install-steps" style="display:none">
-        Abre esta misma dirección desde tu móvil y pulsa de nuevo <b>📲 Instalar app</b>.
+        Abre esta misma dirección desde tu móvil y pulsa de nuevo el botón <b>📲</b>.
       </div>
     </div>
+
     <div class="modal-actions">
       <button type="button" id="nativeInstallBtn" class="primary" style="display:none">Instalar</button>
       <button type="button" id="okInstallBtn">Entendido</button>
@@ -1194,62 +1329,75 @@ document.addEventListener("DOMContentLoaded",()=>{
   </div>
 </div>
 
-
 <script id="install-app-helper">
 (function(){
   let deferredInstallPrompt=null;
-  const qs=s=>document.querySelector(s);
+  const q=s=>document.querySelector(s);
+
+  function isIOS(){
+    return /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+      (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
+  }
+  function isAndroid(){
+    return /android/i.test(navigator.userAgent);
+  }
+  function isStandalone(){
+    return window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone===true;
+  }
 
   window.addEventListener("beforeinstallprompt",(e)=>{
     e.preventDefault();
     deferredInstallPrompt=e;
   });
 
-  function isIOS(){
-    return /iphone|ipad|ipod/i.test(navigator.userAgent) ||
-      (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
-  }
-  function isAndroid(){return /android/i.test(navigator.userAgent)}
-  function isStandalone(){
-    return window.matchMedia("(display-mode: standalone)").matches ||
-      window.navigator.standalone===true;
+  function closeInstall(){
+    q("#installModal")?.classList.remove("show");
   }
 
   function openInstall(){
     if(isStandalone()){
-      alert("Familia MSM ya está abierta como aplicación desde la pantalla de inicio.");
+      alert("Familia MSM ya está añadida y abierta como aplicación.");
       return;
     }
-    const modal=qs("#installModal");
-    const ios=qs("#iosInstallHelp"), android=qs("#androidInstallHelp"), desktop=qs("#desktopInstallHelp");
-    const nativeBtn=qs("#nativeInstallBtn");
-    if(ios)ios.style.display="none";
-    if(android)android.style.display="none";
-    if(desktop)desktop.style.display="none";
-    if(nativeBtn)nativeBtn.style.display="none";
+
+    const modal=q("#installModal");
+    const ios=q("#iosInstallHelp");
+    const android=q("#androidInstallHelp");
+    const desktop=q("#desktopInstallHelp");
+    const nativeBtn=q("#nativeInstallBtn");
+
+    if(ios) ios.style.display="none";
+    if(android) android.style.display="none";
+    if(desktop) desktop.style.display="none";
+    if(nativeBtn) nativeBtn.style.display="none";
 
     if(isIOS()){
-      if(ios)ios.style.display="block";
+      if(ios) ios.style.display="block";
     }else if(isAndroid()){
-      if(android)android.style.display="block";
+      if(android) android.style.display="block";
       if(deferredInstallPrompt && nativeBtn) nativeBtn.style.display="inline-flex";
     }else{
       if(deferredInstallPrompt && nativeBtn) nativeBtn.style.display="inline-flex";
-      else if(desktop)desktop.style.display="block";
+      else if(desktop) desktop.style.display="block";
     }
+
     modal?.classList.add("show");
   }
 
   document.addEventListener("DOMContentLoaded",()=>{
-    qs("#installAppBtn")?.addEventListener("click",openInstall);
-    qs("#closeInstall")?.addEventListener("click",()=>qs("#installModal")?.classList.remove("show"));
-    qs("#okInstallBtn")?.addEventListener("click",()=>qs("#installModal")?.classList.remove("show"));
-    qs("#nativeInstallBtn")?.addEventListener("click",async()=>{
-      if(!deferredInstallPrompt)return;
+    q("#installAppBtn")?.addEventListener("click",openInstall);
+    q("#closeInstall")?.addEventListener("click",closeInstall);
+    q("#okInstallBtn")?.addEventListener("click",closeInstall);
+    q("#installModal")?.addEventListener("click",(e)=>{
+      if(e.target.id==="installModal") closeInstall();
+    });
+    q("#nativeInstallBtn")?.addEventListener("click",async()=>{
+      if(!deferredInstallPrompt) return;
       deferredInstallPrompt.prompt();
-      try{await deferredInstallPrompt.userChoice}catch(e){}
+      try{ await deferredInstallPrompt.userChoice; }catch(e){}
       deferredInstallPrompt=null;
-      qs("#installModal")?.classList.remove("show");
+      closeInstall();
     });
   });
 })();
