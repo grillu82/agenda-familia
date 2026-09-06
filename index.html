@@ -8,8 +8,8 @@
 <style>
 :root{
   --bg:#f6f9fc; --card:#fff; --ink:#10213a; --muted:#6c7a90; --line:#e6edf5;
-  --sergio:#dff1ff; --sergio-ink:#1264a3; --maria:#ffe1ef; --maria-ink:#b83272;
-  --martina:#e1f7e7; --martina-ink:#23864a; --familia:#fff1c7; --familia-ink:#976500;
+  --sergio:#dff1ff; --sergio-ink:#1264a3; --maria:#dcecff; --maria-ink:#1d5fa7;
+  --martina:#ffe1ef; --martina-ink:#b83272; --familia:#e1f7e7; --familia-ink:#23864a;
   --danger:#ffe3e5; --danger-ink:#b3202e; --warn:#fff3d6; --warn-ink:#996000;
   --shadow:0 10px 30px rgba(25, 45, 75, .08); --radius:22px;
 }
@@ -162,8 +162,111 @@ textarea{min-height:82px;resize:vertical}
 }
 </style>
 
+
+<style id="calendar-view-styles">
+.view-toggle{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  margin:10px 0 14px;
+  flex-wrap:wrap;
+}
+.view-toggle button{
+  border:1px solid #d7dce3;
+  background:#fff;
+  border-radius:999px;
+  padding:8px 12px;
+  font-weight:700;
+  cursor:pointer;
+}
+.view-toggle button.active{
+  background:#111827;
+  color:#fff;
+  border-color:#111827;
+}
+.calendar-wrap{
+  display:none;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:18px;
+  overflow:hidden;
+  margin-top:12px;
+}
+.calendar-wrap.active{display:block;}
+.list-wrap.hidden{display:none!important;}
+.calendar-head{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  background:#f8fafc;
+  border-bottom:1px solid #e5e7eb;
+}
+.calendar-head div{
+  padding:10px 6px;
+  text-align:center;
+  font-size:12px;
+  font-weight:800;
+  color:#667085;
+}
+.calendar-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+}
+.calendar-day{
+  min-height:112px;
+  border-right:1px solid #eef1f4;
+  border-bottom:1px solid #eef1f4;
+  padding:7px;
+  background:#fff;
+}
+.calendar-day:nth-child(7n){border-right:0;}
+.calendar-day.muted{background:#fafafa;}
+.calendar-date{
+  font-size:12px;
+  font-weight:800;
+  margin-bottom:6px;
+  color:#344054;
+}
+.calendar-day.muted .calendar-date{color:#b0b7c3;}
+.cal-event{
+  display:block;
+  border-radius:8px;
+  padding:5px 6px;
+  margin:0 0 5px;
+  font-size:11px;
+  line-height:1.2;
+  font-weight:700;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  cursor:pointer;
+  border:1px solid transparent;
+}
+.cal-event.sergio{background:var(--sergio);color:var(--sergio-ink);}
+.cal-event.maria{background:var(--maria);color:var(--maria-ink);}
+.cal-event.martina{background:var(--martina);color:var(--martina-ink);}
+.cal-event.familia{background:var(--familia);color:var(--familia-ink);}
+@media(max-width:700px){
+  .calendar-day{min-height:84px;padding:4px;}
+  .calendar-head div{font-size:10px;padding:8px 2px;}
+  .calendar-date{font-size:11px;}
+  .cal-event{font-size:9px;padding:4px;}
+}
+</style>
+
 </head>
 <body>
+
+<div class="view-toggle" id="viewToggle">
+  <button type="button" id="btnListView" class="active">☷ Lista</button>
+  <button type="button" id="btnCalendarView">🗓 Calendario</button>
+</div>
+<div id="calendarWrap" class="calendar-wrap">
+  <div class="calendar-head">
+    <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
+  </div>
+  <div id="calendarGrid" class="calendar-grid"></div>
+</div>
+
 <div class="app">
   <section class="hero">
     <h1>Familia Suárez ❤️</h1>
@@ -173,7 +276,7 @@ textarea{min-height:82px;resize:vertical}
       <button class="person-pill" data-person="Sergio">S Sergio</button>
       <button class="person-pill" data-person="María">M María</button>
       <button class="person-pill" data-person="Martina">M Martina</button>
-      <button class="person-pill" data-person="Familia">👨‍👩‍👧 Familia</button>
+      <button class="person-pill" data-person="Familia">💼 Trabajo</button>
     </div>
   </section>
 
@@ -203,7 +306,7 @@ textarea{min-height:82px;resize:vertical}
         <div class="field">
           <label>Persona</label>
           <select id="person" required>
-            <option>Sergio</option><option>María</option><option>Martina</option><option>Familia</option>
+            <option>Sergio</option><option>María</option><option>Martina</option><option value="Familia">Trabajo</option>
           </select>
         </div>
         <div class="field">
@@ -546,5 +649,132 @@ $("#importFile").onchange=async e=>{
 };
 loadEvents();
 </script>
+
+<script id="calendar-view-script">
+(function(){
+  function getEventsArray(){
+    try{
+      if (typeof state !== "undefined" && Array.isArray(state.events)) return state.events;
+      if (typeof events !== "undefined" && Array.isArray(events)) return events;
+    }catch(e){}
+    return [];
+  }
+
+  function monthCursor(){
+    try{
+      if (typeof state !== "undefined" && state.month){
+        const s = state.month;
+        if (/^\d{4}-\d{2}$/.test(s)) return new Date(s+"-01T12:00:00");
+      }
+    }catch(e){}
+    return new Date();
+  }
+
+  function personClass(person){
+    if(person==="María") return "maria";
+    if(person==="Martina") return "martina";
+    if(person==="Familia" || person==="Trabajo") return "familia";
+    return "sergio";
+  }
+
+  function displayPerson(person){
+    return (person==="Familia"||person==="Trabajo") ? "Trabajo" : person;
+  }
+
+  function renderCalendarView(){
+    const grid=document.getElementById("calendarGrid");
+    if(!grid) return;
+
+    const base=monthCursor();
+    const year=base.getFullYear(), month=base.getMonth();
+    const first=new Date(year,month,1);
+    const mondayIndex=(first.getDay()+6)%7;
+    const start=new Date(year,month,1-mondayIndex);
+
+    const evs=getEventsArray();
+    grid.innerHTML="";
+
+    for(let i=0;i<42;i++){
+      const d=new Date(start);
+      d.setDate(start.getDate()+i);
+      const iso=d.toISOString().slice(0,10);
+      const cell=document.createElement("div");
+      cell.className="calendar-day"+(d.getMonth()!==month?" muted":"");
+
+      const date=document.createElement("div");
+      date.className="calendar-date";
+      date.textContent=d.getDate();
+      cell.appendChild(date);
+
+      const dayEvents=evs.filter(e=>e.date===iso).sort((a,b)=>(a.start_time||"99:99").localeCompare(b.start_time||"99:99"));
+      dayEvents.forEach(e=>{
+        const chip=document.createElement("div");
+        chip.className="cal-event "+personClass(e.person);
+        const time=e.all_day ? "" : (e.start_time ? e.start_time.slice(0,5)+" " : "");
+        chip.textContent=time + (e.title||"Evento");
+        chip.title=(displayPerson(e.person)+" · "+(e.title||"Evento"));
+        chip.addEventListener("click",()=>{
+          try{
+            if(typeof openEdit==="function") return openEdit(e.id);
+            if(typeof editEvent==="function") return editEvent(e.id);
+          }catch(err){}
+        });
+        cell.appendChild(chip);
+      });
+
+      grid.appendChild(cell);
+    }
+  }
+
+  function setView(mode){
+    const cal=document.getElementById("calendarWrap");
+    const listBtn=document.getElementById("btnListView");
+    const calBtn=document.getElementById("btnCalendarView");
+    const list=document.getElementById("agendaList") || document.querySelector(".agenda-list");
+    if(mode==="calendar"){
+      if(cal) cal.classList.add("active");
+      if(list) list.classList.add("hidden");
+      if(calBtn) calBtn.classList.add("active");
+      if(listBtn) listBtn.classList.remove("active");
+      renderCalendarView();
+    }else{
+      if(cal) cal.classList.remove("active");
+      if(list) list.classList.remove("hidden");
+      if(calBtn) calBtn.classList.remove("active");
+      if(listBtn) listBtn.classList.add("active");
+    }
+    localStorage.setItem("family_view_mode",mode);
+  }
+
+  document.addEventListener("DOMContentLoaded",()=>{
+    const a=document.getElementById("btnListView");
+    const b=document.getElementById("btnCalendarView");
+    if(a) a.addEventListener("click",()=>setView("list"));
+    if(b) b.addEventListener("click",()=>setView("calendar"));
+    const saved=localStorage.getItem("family_view_mode")||"list";
+    setView(saved);
+    setTimeout(renderCalendarView,700);
+  });
+
+  window.renderCalendarView=renderCalendarView;
+
+  // Re-render calendar after common render functions run.
+  ["render","renderEvents","renderAgenda","refreshUI"].forEach(name=>{
+    try{
+      const fn=window[name];
+      if(typeof fn==="function" && !fn.__calendarWrapped){
+        const wrapped=function(){
+          const r=fn.apply(this,arguments);
+          setTimeout(renderCalendarView,0);
+          return r;
+        };
+        wrapped.__calendarWrapped=true;
+        window[name]=wrapped;
+      }
+    }catch(e){}
+  });
+})();
+</script>
+
 </body>
 </html>
