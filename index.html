@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#f7fbff" />
+<title>Familia Suárez · Agenda compartida</title>
+<style>
+:root{
+  --bg:#f6f9fc; --card:#fff; --ink:#10213a; --muted:#6c7a90; --line:#e6edf5;
+  --sergio:#dff1ff; --sergio-ink:#1264a3; --maria:#ffe1ef; --maria-ink:#b83272;
+  --martina:#e1f7e7; --martina-ink:#23864a; --familia:#fff1c7; --familia-ink:#976500;
+  --danger:#ffe3e5; --danger-ink:#b3202e; --warn:#fff3d6; --warn-ink:#996000;
+  --shadow:0 10px 30px rgba(25, 45, 75, .08); --radius:22px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#eef7ff 0,#f8fbff 180px,#f6f9fc 100%);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:760px;margin:0 auto;padding:0 14px 100px}
+.hero{padding:22px 6px 14px}
+.hero h1{font-size:32px;line-height:1;margin:0 0 6px}
+.hero p{margin:0;color:var(--muted);font-size:15px}
+.people{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.person-pill,.chip{border:0;border-radius:999px;padding:9px 13px;font-weight:700;display:inline-flex;align-items:center;gap:8px}
+.person-pill.active{outline:2px solid rgba(16,33,58,.18)}
+.person-pill[data-person="Sergio"],.chip.sergio{background:var(--sergio);color:var(--sergio-ink)}
+.person-pill[data-person="María"],.chip.maria{background:var(--maria);color:var(--maria-ink)}
+.person-pill[data-person="Martina"],.chip.martina{background:var(--martina);color:var(--martina-ink)}
+.person-pill[data-person="Familia"],.chip.familia{background:var(--familia);color:var(--familia-ink)}
+.toolbar{background:rgba(255,255,255,.82);backdrop-filter:blur(12px);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:24px;padding:10px;display:flex;gap:8px;align-items:center;position:sticky;top:8px;z-index:5}
+.toolbar button{border:0;border-radius:16px;background:#f0f5fa;padding:10px 12px;color:var(--ink);font-weight:750}
+.toolbar button.active{background:#1264a3;color:#fff}
+.toolbar .grow{flex:1}
+.month-title{font-weight:800;font-size:16px;padding:0 4px}
+.alerts{margin:16px 0}
+.alert{padding:14px 16px;border-radius:18px;margin-bottom:10px;font-weight:700;display:flex;gap:10px;align-items:flex-start}
+.alert.danger{background:var(--danger);color:var(--danger-ink)}
+.alert.warn{background:var(--warn);color:var(--warn-ink)}
+.section-title{font-size:19px;margin:20px 3px 10px}
+.day{margin:12px 0 18px}
+.day-head{display:flex;align-items:baseline;gap:10px;margin:0 4px 8px}
+.day-head .date{font-size:24px;font-weight:900}
+.day-head .weekday{font-weight:800;color:var(--muted);text-transform:capitalize}
+.event{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:13px 14px;margin:8px 0;box-shadow:0 5px 20px rgba(25,45,75,.05);position:relative}
+.event.sergio{border-left:5px solid #69bdf3}
+.event.maria{border-left:5px solid #f28abb}
+.event.martina{border-left:5px solid #6fd18d}
+.event.familia{border-left:5px solid #f0c855}
+.event.conflict{box-shadow:0 0 0 2px #f2535b,0 8px 22px rgba(242,83,91,.14)}
+.event.tight{box-shadow:0 0 0 2px #eab94f,0 8px 22px rgba(234,185,79,.12)}
+.event-top{display:flex;align-items:flex-start;gap:10px}
+.event-icon{font-size:25px;width:32px;flex:0 0 32px}
+.event-main{flex:1;min-width:0}
+.event-title{font-weight:850;font-size:16px;margin-bottom:4px}
+.event-meta{font-size:14px;color:var(--muted);display:flex;flex-wrap:wrap;gap:7px 10px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.tag{font-size:12px;border-radius:999px;padding:5px 8px;background:#f1f5f9;color:#4b5b70;font-weight:700}
+.tag.away{background:#ffe1dc;color:#a53f2b}
+.tag.conditional{background:#eee7ff;color:#6241a8}
+.tag.conflict{background:var(--danger);color:var(--danger-ink)}
+.tag.tight{background:var(--warn);color:var(--warn-ink)}
+.event-actions{display:flex;gap:5px}
+.icon-btn{border:0;background:#eef3f8;border-radius:12px;padding:8px;line-height:1}
+.empty{background:#fff;border:1px dashed #cdd9e7;border-radius:20px;padding:30px 18px;text-align:center;color:var(--muted)}
+.fab{position:fixed;right:max(18px,calc((100vw - 760px)/2 + 18px));bottom:24px;width:58px;height:58px;border-radius:50%;border:0;background:#1264a3;color:#fff;font-size:30px;box-shadow:0 10px 25px rgba(18,100,163,.28);z-index:9}
+.modal-backdrop{position:fixed;inset:0;background:rgba(16,33,58,.38);z-index:20;display:none;align-items:flex-end;justify-content:center}
+.modal-backdrop.show{display:flex}
+.modal{width:min(760px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:28px 28px 0 0;padding:20px 18px 28px;box-shadow:0 -20px 50px rgba(0,0,0,.12)}
+.modal h2{margin:0 0 16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.field.full{grid-column:1/-1}
+label{font-size:13px;font-weight:800;color:#55647a}
+input,select,textarea{width:100%;border:1px solid #d8e2ed;border-radius:14px;padding:12px;background:#fff;color:var(--ink)}
+textarea{min-height:82px;resize:vertical}
+.row{display:flex;gap:10px;align-items:center}
+.primary{background:#1264a3;color:#fff;border:0;border-radius:14px;padding:12px 16px;font-weight:800}
+.secondary{background:#eef3f8;color:var(--ink);border:0;border-radius:14px;padding:12px 16px;font-weight:800}
+.danger-btn{background:#ffe4e7;color:#a92331;border:0;border-radius:14px;padding:12px 16px;font-weight:800}
+.settings-box{background:#f7fafc;border:1px solid var(--line);border-radius:18px;padding:14px;margin:12px 0}
+.small{font-size:12px;color:var(--muted)}
+@media (max-width:560px){.grid{grid-template-columns:1fr}.hero h1{font-size:28px}.toolbar{overflow:auto}.month-title{white-space:nowrap}}
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="hero">
+    <h1>Familia Suárez ❤️</h1>
+    <p>Quién está, quién sale y dónde se nos cruza la agenda.</p>
+    <div class="people">
+      <button class="person-pill active" data-person="Todos">Todos</button>
+      <button class="person-pill" data-person="Sergio">S Sergio</button>
+      <button class="person-pill" data-person="María">M María</button>
+      <button class="person-pill" data-person="Martina">M Martina</button>
+      <button class="person-pill" data-person="Familia">👨‍👩‍👧 Familia</button>
+    </div>
+  </section>
+
+  <div class="toolbar">
+    <button id="prevBtn">‹</button>
+    <div class="month-title grow" id="monthTitle"></div>
+    <button id="todayBtn">Hoy</button>
+    <button id="nextBtn">›</button>
+    <button id="settingsBtn">⚙️</button>
+  </div>
+
+  <div id="alerts" class="alerts"></div>
+  <h2 class="section-title">Agenda</h2>
+  <div id="agenda"></div>
+</div>
+<button id="addBtn" class="fab" aria-label="Añadir evento">+</button>
+
+<div id="eventModal" class="modal-backdrop">
+  <div class="modal">
+    <h2 id="eventModalTitle">Añadir evento</h2>
+    <form id="eventForm">
+      <input type="hidden" id="eventId">
+      <div class="grid">
+        <div class="field full">
+          <label>Título</label><input id="title" required placeholder="Ej. Dentista">
+        </div>
+        <div class="field">
+          <label>Persona</label>
+          <select id="person" required>
+            <option>Sergio</option><option>María</option><option>Martina</option><option>Familia</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Categoría</label>
+          <select id="category">
+            <option>Trabajo</option><option>Familia</option><option>Salud</option><option>Tenis</option>
+            <option>Inglés</option><option>Deporte</option><option>Personal</option><option>Otro</option>
+          </select>
+        </div>
+        <div class="field"><label>Fecha</label><input id="date" type="date" required></div>
+        <div class="field"><label>Todo el día</label><select id="allDay"><option value="false">No</option><option value="true">Sí</option></select></div>
+        <div class="field"><label>Hora inicio</label><input id="startTime" type="time"></div>
+        <div class="field"><label>Hora fin</label><input id="endTime" type="time"></div>
+        <div class="field full"><label>Lugar</label><input id="location" placeholder="Ej. Gijón"></div>
+        <div class="field"><label>¿Fuera de casa?</label><select id="away"><option value="false">No</option><option value="true">Sí</option></select></div>
+        <div class="field"><label>¿Condicional?</label><select id="conditional"><option value="false">No</option><option value="true">Sí</option></select></div>
+        <div class="field full"><label>Notas</label><textarea id="notes"></textarea></div>
+      </div>
+      <div class="row">
+        <button class="primary" type="submit">Guardar</button>
+        <button class="secondary" type="button" id="cancelEvent">Cancelar</button>
+        <button class="danger-btn" type="button" id="deleteEvent" style="margin-left:auto;display:none">Eliminar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="settingsModal" class="modal-backdrop">
+  <div class="modal">
+    <h2>Compartir la agenda</h2>
+    <p>La app funciona ya en este dispositivo. Para que Sergio, María y Martina vean y editen <b>la misma agenda</b>, conecta un proyecto de Supabase.</p>
+    <div class="settings-box">
+      <div class="field"><label>Supabase Project URL</label><input id="supabaseUrl" placeholder="https://xxxxx.supabase.co"></div>
+      <div class="field"><label>Supabase anon key</label><textarea id="supabaseKey" placeholder="eyJ..."></textarea></div>
+      <div class="row">
+        <button id="saveSettings" class="primary">Guardar conexión</button>
+        <button id="disconnectSettings" class="secondary">Usar solo este móvil</button>
+      </div>
+      <p class="small">Después de ejecutar el archivo <b>supabase_setup.sql</b> una vez en Supabase, basta con poner aquí la URL y la anon key en cada móvil.</p>
+    </div>
+    <div class="row">
+      <button id="exportBtn" class="secondary">Exportar copia JSON</button>
+      <label class="secondary" style="cursor:pointer">Importar JSON<input id="importFile" type="file" accept=".json,application/json" style="display:none"></label>
+      <button id="closeSettings" class="secondary" style="margin-left:auto">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const INITIAL_EVENTS = [
+  {id:"e0914cluster",title:"Junta General del Clúster TIC",person:"Sergio",category:"Trabajo",date:"2026-09-14",allDay:true,startTime:"",endTime:"",location:"Gijón",away:true,conditional:false,notes:"Come en Gijón"},
+  {id:"e0914baile",title:"Apuntarnos a clases de baile",person:"Familia",category:"Familia",date:"2026-09-14",allDay:true,startTime:"",endTime:"",location:"",away:false,conditional:false,notes:"Sergio + María"},
+  {id:"e0914psico",title:"Psicólogo",person:"María",category:"Salud",date:"2026-09-14",allDay:true,startTime:"",endTime:"",location:"",away:true,conditional:false,notes:"Hora por confirmar"},
+  {id:"e0915oft",title:"Oftalmólogo",person:"Martina",category:"Salud",date:"2026-09-15",allDay:false,startTime:"13:00",endTime:"",location:"",away:true,conditional:false,notes:"Hora aproximada"},
+  {id:"e0916rafa",title:"Rafa Nadal Tour · partido",person:"Martina",category:"Tenis",date:"2026-09-16",allDay:false,startTime:"21:00",endTime:"",location:"Gijón",away:true,conditional:false,notes:""},
+  {id:"e0917rafa",title:"Rafa Nadal Tour · siguiente ronda",person:"Martina",category:"Tenis",date:"2026-09-17",allDay:false,startTime:"13:30",endTime:"",location:"Gijón",away:true,conditional:true,notes:"Solo si gana el 16"},
+  {id:"e0918pilates",title:"Pilates",person:"María",category:"Deporte",date:"2026-09-18",allDay:true,startTime:"",endTime:"",location:"",away:true,conditional:false,notes:"Hora por confirmar"},
+  {id:"e0918pelu",title:"Peluquería",person:"María",category:"Personal",date:"2026-09-18",allDay:true,startTime:"",endTime:"",location:"",away:true,conditional:false,notes:"Hora por confirmar"},
+  {id:"e0923derma",title:"Dermatología",person:"María",category:"Salud",date:"2026-09-23",allDay:true,startTime:"",endTime:"",location:"",away:true,conditional:false,notes:"Hora por confirmar"},
+  {id:"e0925dent",title:"Dentista",person:"Sergio",category:"Salud",date:"2026-09-25",allDay:false,startTime:"09:00",endTime:"",location:"",away:true,conditional:false,notes:""},
+  {id:"e0925med",title:"Consulta Centro Médico",person:"María",category:"Salud",date:"2026-09-25",allDay:true,startTime:"",endTime:"",location:"Centro Médico",away:true,conditional:false,notes:"Hora por confirmar"},
+
+  {id:"ia01",title:"Academia IA · Sesión 1/15",person:"Sergio",category:"Trabajo",date:"2026-09-22",allDay:false,startTime:"15:00",endTime:"17:00",location:"Teams (online)",away:false,conditional:false,notes:""},
+  {id:"ia02",title:"Academia IA · Sesión 2/15",person:"Sergio",category:"Trabajo",date:"2026-09-23",allDay:false,startTime:"15:00",endTime:"17:00",location:"Teams (online)",away:false,conditional:false,notes:""},
+  {id:"ia03",title:"Academia IA · Sesión 3/15",person:"Sergio",category:"Trabajo",date:"2026-09-29",allDay:false,startTime:"15:00",endTime:"17:00",location:"Teams (online)",away:false,conditional:false,notes:""},
+  {id:"ia04",title:"Academia IA · Sesión 4/15",person:"Sergio",category:"Trabajo",date:"2026-09-30",allDay:false,startTime:"15:00",endTime:"17:00",location:"Teams (online)",away:false,conditional:false,notes:""},
+  {id:"ia05",title:"Academia IA · Sesión 5/15",person:"Sergio",category:"Trabajo",date:"2026-10-06",allDay:false,startTime:"15:00",endTime:"17:00",location:"Teams (online)",away:false,conditional:false,notes:""},
+  {id:"ia06",title:"Academia IA · Sesión 6/15",person:"Sergio",category:"Trabajo",date:"2026-10-07",allDay:false,startTime:"15:00",endTime:"17:00",location:"Teams (online)",away:false,conditional:false,notes:""},
+  {id:"ia07",title:"Academia IA · Sesión 7/15",person:"Sergio",category:"Trabajo",date:"2026-10-13",allDay:false,startTime:"15:00",endTime:"17:00",location:"Teams (online)",away:false,conditional:false,notes:""},
+  {id:"ia08",title:"Academia IA · Sesión 8/15",person:"Sergio",category:"Trabajo",date:"2026-10-14",allDay:false,startTime:"15:00",endTime:"17:00",location:"Teams (online)",away:false,conditional:false,notes:""},
+  {id:"ia09",title:"Academia IA · Sesión 9/15",person:"Sergio",category:"Trabajo",date:"2026-10-20",allDay:false,startTime:"15:00",endTime:"17:00",location:"Teams (online)",away:false,conditional:false,notes:""},
+  {id:"ia10",title:"Academia IA · Sesión 10/15",person:"Sergio",category:"Trabajo",date:"2026-10-21",allDay:false,startTime:"15:00",endTime:"17:00",location:"Teams (online)",away:false,conditional:false,notes:""},
+  {id:"ia11",title:"Academia IA · Sesión 11/15",person:"Sergio",category:"Trabajo",date:"2026-10-27",allDay:false,startTime:"15:00",endTime:"17:00",location:"Teams (online)",away:false,conditional:false,notes:""},
+  {id:"ia12",title:"Academia IA · Sesión 12/15",person:"Sergio",category:"Trabajo",date:"2026-10-28",allDay:false,startTime:"15:00",endTime:"17:00",location:"Teams (online)",away:false,conditional:false,notes:""},
+  {id:"ia13",title:"Academia IA · Sesión 13/15",person:"Sergio",category:"Trabajo",date:"2026-11-03",allDay:false,startTime:"15:00",endTime:"17:00",location:"Teams (online)",away:false,conditional:false,notes:""},
+  {id:"ia14",title:"Academia IA · Sesión 14/15",person:"Sergio",category:"Trabajo",date:"2026-11-04",allDay:false,startTime:"15:00",endTime:"17:00",location:"Teams (online)",away:false,conditional:false,notes:""},
+  {id:"ia15",title:"Academia IA · Sesión 15/15",person:"Sergio",category:"Trabajo",date:"2026-11-10",allDay:false,startTime:"09:00",endTime:"18:00",location:"Presencial",away:true,conditional:false,notes:""}
+];
+
+function englishEvents(){
+  const out=[]; let d=new Date("2026-09-07T12:00:00");
+  const end=new Date("2026-12-31T12:00:00");
+  while(d<=end){
+    const dow=d.getDay();
+    if(dow===1||dow===3){
+      const iso=d.toISOString().slice(0,10);
+      out.push({id:"eng"+iso.replaceAll("-",""),title:"Inglés",person:"Martina",category:"Inglés",date:iso,allDay:false,startTime:"19:10",endTime:"20:40",location:"",away:true,conditional:false,notes:""});
+    }
+    d.setDate(d.getDate()+1);
+  }
+  return out;
+}
+INITIAL_EVENTS.push(...englishEvents());
+INITIAL_EVENTS.push({id:"fed0909",title:"Entreno Federación",person:"Martina",category:"Tenis",date:"2026-09-09",allDay:false,startTime:"18:45",endTime:"20:15",location:"Federación",away:true,conditional:false,notes:""});
+
+const state = {
+  events: [],
+  filter:"Todos",
+  month:new Date("2026-09-01T12:00:00"),
+  remote:false,
+  supabaseUrl:localStorage.getItem("family_supabase_url")||"",
+  supabaseKey:localStorage.getItem("family_supabase_key")||""
+};
+
+const $=s=>document.querySelector(s);
+const personClass=p=>p==="Sergio"?"sergio":p==="María"?"maria":p==="Martina"?"martina":"familia";
+const iconFor=c=>({Trabajo:"💼",Familia:"👨‍👩‍👧",Salud:"🩺",Tenis:"🎾",Inglés:"🇬🇧",Deporte:"🧘",Personal:"✨",Otro:"📌"})[c]||"📌";
+const fmtDate=d=>new Intl.DateTimeFormat("es-ES",{weekday:"long",day:"numeric",month:"long"}).format(new Date(d+"T12:00:00"));
+const fmtMonth=d=>new Intl.DateTimeFormat("es-ES",{month:"long",year:"numeric"}).format(d).replace(/^./,c=>c.toUpperCase());
+
+function uid(){return crypto.randomUUID?crypto.randomUUID():"id"+Date.now()+Math.random().toString(16).slice(2)}
+
+async function api(path, opts={}){
+  const url=state.supabaseUrl.replace(/\/$/,"")+"/rest/v1/"+path;
+  const headers={"apikey":state.supabaseKey,"Authorization":"Bearer "+state.supabaseKey,"Content-Type":"application/json","Prefer":"return=representation",...(opts.headers||{})};
+  const res=await fetch(url,{...opts,headers});
+  if(!res.ok) throw new Error(await res.text());
+  const txt=await res.text(); return txt?JSON.parse(txt):null;
+}
+async function loadEvents(){
+  if(state.supabaseUrl&&state.supabaseKey){
+    try{
+      const data=await api("events?select=*&order=date.asc,start_time.asc");
+      if(data.length===0){
+        for(const e of INITIAL_EVENTS) await saveRemote(e);
+        state.events=INITIAL_EVENTS.map(x=>({...x}));
+      } else state.events=data.map(fromDb);
+      state.remote=true;
+    }catch(e){console.warn(e); state.remote=false; loadLocal();}
+  } else loadLocal();
+  render();
+}
+function loadLocal(){
+  const saved=localStorage.getItem("family_events");
+  state.events=saved?JSON.parse(saved):INITIAL_EVENTS.map(x=>({...x}));
+  if(!saved) localStorage.setItem("family_events",JSON.stringify(state.events));
+}
+function saveLocal(){localStorage.setItem("family_events",JSON.stringify(state.events))}
+function toDb(e){return {id:e.id,title:e.title,person:e.person,category:e.category,date:e.date,all_day:!!e.allDay,start_time:e.startTime||null,end_time:e.endTime||null,location:e.location||null,away:!!e.away,conditional:!!e.conditional,notes:e.notes||null}}
+function fromDb(r){return {id:r.id,title:r.title,person:r.person,category:r.category,date:r.date,allDay:r.all_day,startTime:r.start_time?.slice(0,5)||"",endTime:r.end_time?.slice(0,5)||"",location:r.location||"",away:r.away,conditional:r.conditional,notes:r.notes||""}}
+async function saveRemote(e){return api("events",{method:"POST",body:JSON.stringify(toDb(e)),headers:{"Prefer":"resolution=merge-duplicates,return=representation"}})}
+async function updateRemote(e){return api("events?id=eq."+encodeURIComponent(e.id),{method:"PATCH",body:JSON.stringify(toDb(e))})}
+async function deleteRemote(id){return api("events?id=eq."+encodeURIComponent(id),{method:"DELETE"})}
+
+function minutes(t){if(!t)return null;const [h,m]=t.split(":").map(Number);return h*60+m}
+function conflictInfo(events){
+  const map=new Map(); const alerts=[];
+  const byPersonDay={};
+  for(const e of events){
+    if(e.allDay||!e.startTime||!e.endTime) continue;
+    const k=e.person+"|"+e.date;(byPersonDay[k]??=[]).push(e);
+  }
+  Object.values(byPersonDay).forEach(list=>{
+    list.sort((a,b)=>minutes(a.startTime)-minutes(b.startTime));
+    for(let i=0;i<list.length;i++)for(let j=i+1;j<list.length;j++){
+      const a=list[i],b=list[j],as=minutes(a.startTime),ae=minutes(a.endTime),bs=minutes(b.startTime),be=minutes(b.endTime);
+      if(bs<ae){
+        map.set(a.id,"conflict");map.set(b.id,"conflict");
+        alerts.push({type:"danger",text:`${a.person}: ${a.title} y ${b.title} se solapan ${Math.min(ae,be)-Math.max(as,bs)} min · ${fmtDate(a.date)}`});
+      } else {
+        const gap=bs-ae;
+        if(gap>=0&&gap<=30){
+          map.set(a.id,map.get(a.id)||"tight");map.set(b.id,map.get(b.id)||"tight");
+          alerts.push({type:"warn",text:`${a.person}: solo ${gap} min entre ${a.title} y ${b.title} · ${fmtDate(a.date)}`});
+        }
+      }
+    }
+  });
+  return {map,alerts:[...new Map(alerts.map(a=>[a.text,a])).values()]};
+}
+
+function monthEvents(){
+  const y=state.month.getFullYear(),m=state.month.getMonth();
+  return state.events.filter(e=>{
+    const d=new Date(e.date+"T12:00:00");
+    return d.getFullYear()===y&&d.getMonth()===m&&(state.filter==="Todos"||e.person===state.filter||e.person==="Familia");
+  }).sort((a,b)=>a.date.localeCompare(b.date)||(a.allDay?-1:1)||(a.startTime||"").localeCompare(b.startTime||""));
+}
+function render(){
+  $("#monthTitle").textContent=fmtMonth(state.month)+(state.remote?" · compartido":" · local");
+  const evs=monthEvents();
+  const {map,alerts}=conflictInfo(evs);
+  $("#alerts").innerHTML=alerts.slice(0,4).map(a=>`<div class="alert ${a.type}">${a.type==="danger"?"⚠️":"⏱️"}<div>${a.text}</div></div>`).join("");
+  const groups={}; evs.forEach(e=>(groups[e.date]??=[]).push(e));
+  const dates=Object.keys(groups);
+  $("#agenda").innerHTML=dates.length?dates.map(date=>{
+    const d=new Date(date+"T12:00:00");
+    const daynum=d.getDate();
+    const weekday=new Intl.DateTimeFormat("es-ES",{weekday:"short"}).format(d);
+    const cards=groups[date].map(e=>{
+      const status=map.get(e.id);
+      const time=e.allDay?"Todo el día":(e.startTime+(e.endTime?" – "+e.endTime:""));
+      return `<div class="event ${personClass(e.person)} ${status||""}" data-id="${e.id}">
+        <div class="event-top">
+          <div class="event-icon">${iconFor(e.category)}</div>
+          <div class="event-main">
+            <div class="event-title">${escapeHtml(e.title)}</div>
+            <div class="event-meta"><span>🕒 ${time}</span>${e.location?`<span>📍 ${escapeHtml(e.location)}</span>`:""}${e.notes?`<span>📝 ${escapeHtml(e.notes)}</span>`:""}</div>
+            <div class="tags">
+              <span class="chip ${personClass(e.person)}">${e.person}</span>
+              <span class="tag">${e.category}</span>
+              ${e.away?'<span class="tag away">Fuera de casa</span>':""}
+              ${e.conditional?'<span class="tag conditional">Condicional</span>':""}
+              ${status==="conflict"?'<span class="tag conflict">SOLAPAMIENTO</span>':status==="tight"?'<span class="tag tight">TIEMPO JUSTO</span>':""}
+            </div>
+          </div>
+          <div class="event-actions"><button class="icon-btn edit-btn" data-id="${e.id}">✏️</button></div>
+        </div></div>`;
+    }).join("");
+    return `<section class="day"><div class="day-head"><span class="date">${daynum}</span><span class="weekday">${weekday}</span></div>${cards}</section>`;
+  }).join(""):`<div class="empty">No hay eventos en este mes para este filtro.</div>`;
+  document.querySelectorAll(".edit-btn").forEach(b=>b.onclick=()=>openEvent(b.dataset.id));
+}
+
+function escapeHtml(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+
+document.querySelectorAll(".person-pill").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".person-pill").forEach(x=>x.classList.remove("active"));b.classList.add("active");state.filter=b.dataset.person;render();
+});
+$("#prevBtn").onclick=()=>{state.month.setMonth(state.month.getMonth()-1);render()}
+$("#nextBtn").onclick=()=>{state.month.setMonth(state.month.getMonth()+1);render()}
+$("#todayBtn").onclick=()=>{state.month=new Date();state.month.setDate(1);render()}
+
+function openEvent(id=null){
+  const e=id?state.events.find(x=>x.id===id):null;
+  $("#eventModalTitle").textContent=e?"Editar evento":"Añadir evento";
+  $("#eventId").value=e?.id||"";
+  $("#title").value=e?.title||""; $("#person").value=e?.person||"Sergio"; $("#category").value=e?.category||"Otro";
+  $("#date").value=e?.date||new Date().toISOString().slice(0,10); $("#allDay").value=String(!!e?.allDay);
+  $("#startTime").value=e?.startTime||""; $("#endTime").value=e?.endTime||""; $("#location").value=e?.location||"";
+  $("#away").value=String(!!e?.away); $("#conditional").value=String(!!e?.conditional); $("#notes").value=e?.notes||"";
+  $("#deleteEvent").style.display=e?"inline-block":"none";
+  $("#eventModal").classList.add("show");
+}
+$("#addBtn").onclick=()=>openEvent();
+$("#cancelEvent").onclick=()=>$("#eventModal").classList.remove("show");
+$("#eventModal").onclick=e=>{if(e.target.id==="eventModal")$("#eventModal").classList.remove("show")}
+
+$("#eventForm").onsubmit=async ev=>{
+  ev.preventDefault();
+  const id=$("#eventId").value||uid();
+  const obj={id,title:$("#title").value.trim(),person:$("#person").value,category:$("#category").value,date:$("#date").value,
+    allDay:$("#allDay").value==="true",startTime:$("#startTime").value,endTime:$("#endTime").value,location:$("#location").value.trim(),
+    away:$("#away").value==="true",conditional:$("#conditional").value==="true",notes:$("#notes").value.trim()};
+  const ix=state.events.findIndex(x=>x.id===id);
+  try{
+    if(state.remote){if(ix>=0)await updateRemote(obj);else await saveRemote(obj)}
+    if(ix>=0)state.events[ix]=obj;else state.events.push(obj);
+    if(!state.remote)saveLocal();
+    $("#eventModal").classList.remove("show"); render();
+  }catch(e){alert("No se pudo guardar: "+e.message)}
+};
+$("#deleteEvent").onclick=async()=>{
+  const id=$("#eventId").value;if(!id)return;
+  if(!confirm("¿Eliminar este evento?"))return;
+  try{if(state.remote)await deleteRemote(id);state.events=state.events.filter(x=>x.id!==id);if(!state.remote)saveLocal();$("#eventModal").classList.remove("show");render()}
+  catch(e){alert("No se pudo eliminar: "+e.message)}
+};
+
+$("#settingsBtn").onclick=()=>{$("#supabaseUrl").value=state.supabaseUrl;$("#supabaseKey").value=state.supabaseKey;$("#settingsModal").classList.add("show")}
+$("#closeSettings").onclick=()=>$("#settingsModal").classList.remove("show");
+$("#settingsModal").onclick=e=>{if(e.target.id==="settingsModal")$("#settingsModal").classList.remove("show")}
+$("#saveSettings").onclick=async()=>{
+  state.supabaseUrl=$("#supabaseUrl").value.trim();state.supabaseKey=$("#supabaseKey").value.trim();
+  localStorage.setItem("family_supabase_url",state.supabaseUrl);localStorage.setItem("family_supabase_key",state.supabaseKey);
+  $("#settingsModal").classList.remove("show");await loadEvents();
+};
+$("#disconnectSettings").onclick=()=>{
+  localStorage.removeItem("family_supabase_url");localStorage.removeItem("family_supabase_key");state.supabaseUrl="";state.supabaseKey="";state.remote=false;loadLocal();$("#settingsModal").classList.remove("show");render();
+};
+$("#exportBtn").onclick=()=>{
+  const blob=new Blob([JSON.stringify(state.events,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="familia-suarez-agenda.json";a.click();URL.revokeObjectURL(a.href);
+};
+$("#importFile").onchange=async e=>{
+  const file=e.target.files[0];if(!file)return;
+  try{
+    const data=JSON.parse(await file.text());if(!Array.isArray(data))throw new Error("Formato no válido");
+    state.events=data;if(state.remote){for(const x of data)await saveRemote(x)}else saveLocal();render();alert("Agenda importada.");
+  }catch(err){alert("No se pudo importar: "+err.message)}
+};
+loadEvents();
+</script>
+</body>
+</html>
