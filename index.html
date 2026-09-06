@@ -8,7 +8,7 @@
 :root{
   --bg:#f6f9fc; --card:#fff; --ink:#10213a; --muted:#6c7a90; --line:#e6edf5;
   --sergio:#fff3bf; --sergio-ink:#8a6200; --maria:#dcecff; --maria-ink:#1d5fa7;
-  --martina:#ffe1ef; --martina-ink:#b83272; --familia:#e1f7e7; --familia-ink:#23864a;
+  --martina:#ffe1ef; --martina-ink:#b83272; --trabajo:#e1f7e7; --trabajo-ink:#23864a; --familia:#eee5ff; --familia-ink:#6d4bb3;
   --danger:#ffe3e5; --danger-ink:#b3202e; --warn:#fff3d6; --warn-ink:#996000;
   --shadow:0 10px 30px rgba(25, 45, 75, .08); --radius:22px;
 }
@@ -26,6 +26,7 @@ button{cursor:pointer}
 .person-pill[data-person="Sergio"],.chip.sergio{background:var(--sergio);color:var(--sergio-ink)}
 .person-pill[data-person="María"],.chip.maria{background:var(--maria);color:var(--maria-ink)}
 .person-pill[data-person="Martina"],.chip.martina{background:var(--martina);color:var(--martina-ink)}
+.person-pill[data-person="Trabajo"],.chip.trabajo{background:var(--trabajo);color:var(--trabajo-ink)}
 .person-pill[data-person="Familia"],.chip.familia{background:var(--familia);color:var(--familia-ink)}
 .toolbar{background:rgba(255,255,255,.82);backdrop-filter:blur(12px);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:24px;padding:10px;display:flex;gap:8px;align-items:center;position:sticky;top:8px;z-index:5}
 .toolbar button{border:0;border-radius:16px;background:#f0f5fa;padding:10px 12px;color:var(--ink);font-weight:750}
@@ -252,6 +253,7 @@ body.calendar-mode #alerts{display:block!important;margin-bottom:10px}
 .cal-event.sergio{background:var(--sergio);color:var(--sergio-ink)}
 .cal-event.maria{background:var(--maria);color:var(--maria-ink)}
 .cal-event.martina{background:var(--martina);color:var(--martina-ink)}
+.cal-event.trabajo{background:var(--trabajo);color:var(--trabajo-ink)}
 .cal-event.familia{background:var(--familia);color:var(--familia-ink)}
 .cal-more{font-size:9px;color:var(--muted);font-weight:800;padding-left:2px}
 @media(max-width:560px){
@@ -615,10 +617,11 @@ body.calendar-mode #alerts{
 </style>
 
 
-<link rel="icon" type="image/png" href="favicon.png">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#ffffff">
+
+<link rel="icon" type="image/png" href="favicon.png?v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2">
+<link rel="manifest" href="manifest.webmanifest?v=2">
+<meta name="theme-color" content="#ff4055">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Familia MSM">
@@ -633,10 +636,11 @@ body.calendar-mode #alerts{
     <p>Quién está, quién sale y dónde se nos cruza la agenda.</p>
     <div class="people">
       <button class="person-pill active" data-person="Todos">Todos</button>
-      <button class="person-pill" data-person="Sergio">S Sergio</button>
-      <button class="person-pill" data-person="María">M María</button>
-      <button class="person-pill" data-person="Martina">M Martina</button>
-      <button class="person-pill" data-person="Familia">💼 Trabajo</button>
+      <button class="person-pill" data-person="Sergio">Sergio</button>
+      <button class="person-pill" data-person="María">Maria</button>
+      <button class="person-pill" data-person="Martina">Martina</button>
+      <button class="person-pill" data-person="Trabajo">💼 Trabajo</button>
+      <button class="person-pill" data-person="Familia">👨‍👩‍👧 Familia</button>
     </div>
   </section>
 
@@ -688,7 +692,7 @@ body.calendar-mode #alerts{
         <div class="field">
           <label>Persona <span class="req">*</span></label>
           <select id="person" required>
-            <option>Sergio</option><option>María</option><option>Martina</option><option value="Familia">Trabajo</option>
+            <option value="Sergio">Sergio</option><option value="María">Maria</option><option value="Martina">Martina</option><option value="Trabajo">Trabajo</option><option value="Familia">Familia</option>
           </select>
         </div>
         <div class="field">
@@ -804,7 +808,7 @@ const state = {
 };
 
 const $=s=>document.querySelector(s);
-const personClass=p=>p==="Sergio"?"sergio":p==="María"?"maria":p==="Martina"?"martina":"familia";
+const personClass=p=>p==="Sergio"?"sergio":p==="María"?"maria":p==="Martina"?"martina":p==="Trabajo"?"trabajo":"familia";
 const iconFor=c=>({Trabajo:"💼",Familia:"👨‍👩‍👧",Salud:"🩺",Tenis:"🎾",Inglés:"🇬🇧",Deporte:"🧘",Personal:"✨",Otro:"📌"})[c]||"📌";
 const fmtDate=d=>new Intl.DateTimeFormat("es-ES",{weekday:"long",day:"numeric",month:"long"}).format(new Date(d+"T12:00:00"));
 const fmtMonth=d=>new Intl.DateTimeFormat("es-ES",{month:"long",year:"numeric"}).format(d).replace(/^./,c=>c.toUpperCase());
@@ -837,8 +841,14 @@ function loadLocal(){
   if(!saved) localStorage.setItem("family_events",JSON.stringify(state.events));
 }
 function saveLocal(){localStorage.setItem("family_events",JSON.stringify(state.events))}
-function toDb(e){return {id:e.id,title:e.title,person:e.person,category:e.category,date:e.date,all_day:!!e.allDay,start_time:e.startTime||null,end_time:e.endTime||null,location:e.location||null,away:!!e.away,conditional:!!e.conditional,notes:e.notes||null}}
-function fromDb(r){return {id:r.id,title:r.title,person:r.person,category:r.category,date:r.date,allDay:r.all_day,startTime:r.start_time?.slice(0,5)||"",endTime:r.end_time?.slice(0,5)||"",location:r.location||"",away:r.away,conditional:r.conditional,notes:r.notes||""}}
+function toDb(e){
+  const isTrabajo=e.person==="Trabajo";
+  return {id:e.id,title:e.title,person:isTrabajo?"Familia":e.person,category:isTrabajo?"Trabajo":e.category,date:e.date,all_day:!!e.allDay,start_time:e.startTime||null,end_time:e.endTime||null,location:e.location||null,away:!!e.away,conditional:!!e.conditional,notes:e.notes||null}
+}
+function fromDb(r){
+  const displayPerson=(r.person==="Familia"&&r.category==="Trabajo")?"Trabajo":r.person;
+  return {id:r.id,title:r.title,person:displayPerson,category:r.category,date:r.date,allDay:r.all_day,startTime:r.start_time?.slice(0,5)||"",endTime:r.end_time?.slice(0,5)||"",location:r.location||"",away:r.away,conditional:r.conditional,notes:r.notes||""}
+}
 async function saveRemote(e){return api("events",{method:"POST",body:JSON.stringify(toDb(e)),headers:{"Prefer":"resolution=merge-duplicates,return=representation"}})}
 async function updateRemote(e){return api("events?id=eq."+encodeURIComponent(e.id),{method:"PATCH",body:JSON.stringify(toDb(e))})}
 async function deleteRemote(id){return api("events?id=eq."+encodeURIComponent(id),{method:"DELETE"})}
@@ -874,10 +884,19 @@ function monthEvents(){
   const y=state.month.getFullYear(),m=state.month.getMonth();
   return state.events.filter(e=>{
     const d=new Date(e.date+"T12:00:00");
-    return d.getFullYear()===y&&d.getMonth()===m&&(state.filter==="Todos"||e.person===state.filter||e.person==="Familia");
+    return d.getFullYear()===y&&d.getMonth()===m&&(state.filter==="Todos"||e.person===state.filter);
   }).sort((a,b)=>a.date.localeCompare(b.date)||(a.allDay?-1:1)||(a.startTime||"").localeCompare(b.startTime||""));
 }
+
+function normalizeDisplayPersons(){
+  state.events=(state.events||[]).map(e=>{
+    if(e.person==="Familia" && e.category==="Trabajo") return {...e,person:"Trabajo"};
+    return e;
+  });
+}
+
 function render(){
+  normalizeDisplayPersons();
   $("#monthTitle").textContent=fmtMonth(state.month);
   const evs=monthEvents();
   const {map,alerts}=conflictInfo(evs);
@@ -898,7 +917,7 @@ function render(){
             <div class="event-title">${escapeHtml(e.title)}</div>
             <div class="event-meta"><span>🕒 ${time}</span>${e.location?`<span>📍 ${escapeHtml(e.location)}</span>`:""}${e.notes?`<span>📝 ${escapeHtml(cleanEventNotes(e.notes))}</span>`:""}</div>
             <div class="tags">
-              <span class="chip ${personClass(e.person)}">${e.person}</span>
+              <span class="chip ${personClass(e.person)}">${e.person==="María"?"Maria":e.person}</span>
               <span class="tag">${e.category}</span>
               ${e.away?'<span class="tag away">Fuera de casa</span>':""}
               ${e.conditional?'<span class="tag conditional">Condicional</span>':""}
@@ -983,6 +1002,10 @@ $("#addBtn").onclick=()=>openEvent();
 ["#startTime","#endTime"].forEach(sel=>$(sel).addEventListener("input",()=>{
   if($(sel).value) $("#allDay").value="false";
 }));
+$("#person").addEventListener("change",()=>{
+  if($("#person").value==="Trabajo") $("#category").value="Trabajo";
+  if($("#person").value==="Familia" && $("#category").value==="Trabajo") $("#category").value="Familia";
+});
 $("#allDay").addEventListener("change",()=>{
   if($("#allDay").value==="true"){ $("#startTime").value=""; $("#endTime").value=""; }
 });
@@ -1083,7 +1106,7 @@ loadEvents();
         const b=document.createElement('button'); b.type='button'; b.className='cal-event '+pclass(e.person);
         const t=e.allDay?'':(e.startTime?e.startTime.slice(0,5)+' ': '');
         b.textContent=t+(e.title||'Evento');
-        b.title=(e.person==='Familia'?'Trabajo':e.person)+' · '+(e.title||'Evento');
+        b.title=(e.person==='María'?'Maria':e.person)+' · '+(e.title||'Evento');
         b.onclick=()=>{ if(typeof openEvent==='function') openEvent(e.id); };
         cell.appendChild(b);
       });
@@ -1210,7 +1233,8 @@ document.addEventListener("DOMContentLoaded",()=>{
     if(/\bmartina\b/.test(low))return "Martina";
     if(/\bmar[ií]a\b/.test(low))return "María";
     if(/\bsergio\b/.test(low))return "Sergio";
-    if(/\btrabajo\b/.test(low))return "Familia";
+    if(/\btrabajo\b/.test(low))return "Trabajo";
+    if(/\bfamilia\b/.test(low))return "Familia";
     return "";
   }
   function parseLocation(s){
@@ -1225,7 +1249,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   }
   function makeTitle(s,person,loc){
     let t=s;
-    if(person && person!=="Familia") t=t.replace(new RegExp("\\b"+person.replace("í","[ií]")+"\\b","i"),"");
+    if(person) t=t.replace(new RegExp("\\b"+person.replace("í","[ií]")+"\\b","i"),"");
     t=t.replace(/\btrabajo\b/gi,"");
     t=t.replace(/\b(hoy|mañana|pasado mañana)\b/gi,"");
     t=t.replace(/\b(el\s+)?(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)\b/gi,"");
@@ -1259,7 +1283,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   function fillEventForm(data){
     ensureEventFormOpen();
     if(data.title)q("#title").value=data.title;
-    if(data.person)q("#person").value=data.person;
+    if(data.person){q("#person").value=data.person;if(data.person==="Trabajo")q("#category").value="Trabajo";if(data.person==="Familia"&&q("#category").value==="Trabajo")q("#category").value="Familia";}
     if(data.date)q("#date").value=data.date;
     if(data.start)q("#startTime").value=data.start;
     if(data.end)q("#endTime").value=data.end;
