@@ -887,9 +887,9 @@ body.calendar-mode #alerts{
         <div class="field"><label>Hora inicio</label><input id="startTime" type="time"></div>
         <div class="field"><label>Hora fin</label><input id="endTime" type="time"></div>
         <div class="field full"><label>Lugar</label><input id="location" placeholder="Ej. Gijón"></div>
-        <div class="field"><label>¿Fuera de casa? <span class="small">(duermo fuera)</span></label><select id="away"><option value="false">No</option><option value="true">Sí</option></select></div>
-        <div class="field"><label>¿No como en casa?</label><select id="noLunch"><option value="false">No</option><option value="true">Sí</option></select></div>
-        <div class="field"><label>¿No ceno en casa?</label><select id="noDinner"><option value="false">No</option><option value="true">Sí</option></select></div>
+        <div class="field"><label>¿Duermo en casa?</label><select id="sleepHome"><option value="true">Sí</option><option value="false">No</option></select></div>
+        <div class="field"><label>¿Como en casa?</label><select id="lunchHome"><option value="true">Sí</option><option value="false">No</option></select></div>
+        <div class="field"><label>¿Ceno en casa?</label><select id="dinnerHome"><option value="true">Sí</option><option value="false">No</option></select></div>
         <div class="field"><label>¿Condicional?</label><select id="conditional"><option value="false">No</option><option value="true">Sí</option></select></div>
         
         <div class="field full">
@@ -1188,12 +1188,10 @@ function openEvent(id=null){
   $("#title").value=e?.title||""; $("#person").value=e?.person||"Sergio"; $("#category").value=e?.category||"Otro";
   $("#date").value=e?.date||new Date().toISOString().slice(0,10); $("#allDay").value=String(!!e?.allDay);
   $("#startTime").value=e?.startTime||""; $("#endTime").value=e?.endTime||""; $("#location").value=e?.location||"";
-  $("#away").value=String(!!e?.away);
-  // Si ya duerme fuera y el evento es antiguo (sin marcadores de comidas),
-  // mostramos ambas comidas fuera por defecto.
+  $("#sleepHome").value=String(!(e?.away));
   const hasMealMarkers=!!(e && (/\[\[NO_LUNCH\]\]|\[\[NO_DINNER\]\]/.test(e.notes||"")));
-  $("#noLunch").value=String(!!(e && (noLunchEvent(e) || (e.away && !hasMealMarkers))));
-  $("#noDinner").value=String(!!(e && (noDinnerEvent(e) || (e.away && !hasMealMarkers))));
+  $("#lunchHome").value=String(!(e && (noLunchEvent(e) || (e.away && !hasMealMarkers))));
+  $("#dinnerHome").value=String(!(e && (noDinnerEvent(e) || (e.away && !hasMealMarkers))));
   $("#conditional").value=String(!!e?.conditional); $("#notes").value=cleanEventNotes(e?.notes||"");
   $("#weeklyRepeat").checked=!!(e&&isWeeklyEvent(e));
   $("#deleteEvent").style.display=e?"inline-block":"none";
@@ -1211,10 +1209,10 @@ $("#person").addEventListener("change",()=>{
 $("#allDay").addEventListener("change",()=>{
   if($("#allDay").value==="true"){ $("#startTime").value=""; $("#endTime").value=""; }
 });
-$("#away").addEventListener("change",()=>{
-  if($("#away").value==="true"){
-    $("#noLunch").value="true";
-    $("#noDinner").value="true";
+$("#sleepHome").addEventListener("change",()=>{
+  if($("#sleepHome").value==="false"){
+    $("#lunchHome").value="false";
+    $("#dinnerHome").value="false";
   }
 });
 $("#cancelEvent").onclick=()=>$("#eventModal").classList.remove("show");
@@ -1230,12 +1228,12 @@ $("#eventForm").onsubmit=async ev=>{
   const allDay=(!startTime&&!endTime)&&$("#allDay").value==="true";
   const obj={id,title:$("#title").value.trim(),person:$("#person").value,category:$("#category").value,date:$("#date").value,
     allDay,startTime,endTime,location:$("#location").value.trim(),
-    away:$("#away").value==="true",conditional:$("#conditional").value==="true",
+    away:$("#sleepHome").value==="false",conditional:$("#conditional").value==="true",
     notes:storedEventNotes(
       $("#notes").value.trim(),
       $("#weeklyRepeat").checked,
-      $("#noLunch").value==="true",
-      $("#noDinner").value==="true"
+      $("#lunchHome").value==="false",
+      $("#dinnerHome").value==="false"
     )};
   const ix=state.events.findIndex(x=>x.id===id);
   try{
@@ -1355,11 +1353,17 @@ loadEvents();
       const cls=pclass(e.person);
       const time=e.allDay?"Todo el día":
         [e.startTime?.slice(0,5),e.endTime?.slice(0,5)].filter(Boolean).join("–") || "Sin hora";
-      const meta=[time,e.location,e.away?"✈️ Duerme fuera":""].filter(Boolean).join(" · ");
+      const meta=[
+        time,
+        e.location,
+        e.away?"✈️ Duerme fuera":"",
+        noLunchEvent(e)?"🍽️ No come en casa":"",
+        noDinnerEvent(e)?"🍽️ No cena en casa":""
+      ].filter(Boolean).join(" · ");
       return `<button type="button" class="day-event" data-id="${e.id}">
         <span class="day-event-bar ${cls}"></span>
         <span class="day-event-main">
-          <span class="day-event-title">${e.category==="Viajes"?"🧳 ":""}${e.away?"✈️ ":""}${e.title||"Evento"}</span>
+          <span class="day-event-title">${e.category==="Viajes"?"🧳 ":""}${e.away?"✈️ ":""}${(noLunchEvent(e)||noDinnerEvent(e))?"🍽️ ":""}${e.title||"Evento"}</span>
           <span class="day-event-meta">${meta}</span>
         </span>
         <span class="day-event-person ${cls}">${displayPerson(e.person)}</span>
@@ -1424,8 +1428,12 @@ loadEvents();
         b.className="cal-event "+pclass(e.person);
         const travelIcon=e.category==="Viajes"?"🧳 ":"";
         const awayIcon=e.away?"✈️ ":"";
-        b.textContent=travelIcon+awayIcon+(e.title||"Evento");
-        b.title=displayPerson(e.person)+" · "+(e.title||"Evento")+(e.away?" · ✈️ Duerme fuera":"");
+        const mealIcon=(noLunchEvent(e)||noDinnerEvent(e))?"🍽️ ":"";
+        b.textContent=travelIcon+awayIcon+mealIcon+(e.title||"Evento");
+        b.title=displayPerson(e.person)+" · "+(e.title||"Evento")
+          +(e.away?" · ✈️ Duerme fuera":"")
+          +(noLunchEvent(e)?" · 🍽️ No come en casa":"")
+          +(noDinnerEvent(e)?" · 🍽️ No cena en casa":"");
         b.onclick=ev=>{
           ev.stopPropagation();
           selectDay(iso);
