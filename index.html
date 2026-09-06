@@ -8,7 +8,7 @@
 <style>
 :root{
   --bg:#f6f9fc; --card:#fff; --ink:#10213a; --muted:#6c7a90; --line:#e6edf5;
-  --sergio:#dff1ff; --sergio-ink:#1264a3; --maria:#dcecff; --maria-ink:#1d5fa7;
+  --sergio:#fff3bf; --sergio-ink:#8a6200; --maria:#dcecff; --maria-ink:#1d5fa7;
   --martina:#ffe1ef; --martina-ink:#b83272; --familia:#e1f7e7; --familia-ink:#23864a;
   --danger:#ffe3e5; --danger-ink:#b3202e; --warn:#fff3d6; --warn-ink:#996000;
   --shadow:0 10px 30px rgba(25, 45, 75, .08); --radius:22px;
@@ -272,6 +272,22 @@ body.calendar-mode #alerts{display:block!important;margin-bottom:10px}
 }
 </style>
 
+<style>
+/* Alertas también arriba en la vista Calendario */
+body.calendar-mode #alerts{
+  display:block !important;
+  order:0;
+  margin:0 0 12px 0;
+}
+body.calendar-mode #calendarView{
+  order:1;
+}
+body.calendar-mode .content,
+body.calendar-mode main{
+  display:flex;
+  flex-direction:column;
+}
+</style>
 </head>
 <body>
 <div class="app">
@@ -752,6 +768,22 @@ loadEvents();
   const observer=new MutationObserver(()=>{if(document.getElementById('calendarView')?.classList.contains('active')) renderCalendar()});
   document.addEventListener('DOMContentLoaded',()=>{const a=document.getElementById('agenda'); if(a) observer.observe(a,{childList:true,subtree:true})});
 })();
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded",()=>{
+  const calBtn=document.getElementById("calendarViewBtn") || document.getElementById("btnCalendarView");
+  const listBtn=document.getElementById("listViewBtn") || document.getElementById("btnListView");
+  const alerts=document.getElementById("alerts");
+  const calendar=document.getElementById("calendarView") || document.getElementById("calendarWrap");
+  if(calBtn && alerts && calendar){
+    calBtn.addEventListener("click",()=>{
+      calendar.parentNode.insertBefore(alerts,calendar);
+      alerts.style.display="";
+    });
+  }
+});
 </script>
 
 </body>
