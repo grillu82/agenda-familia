@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#f7fbff" />
-<title>Familia Suárez · Agenda compartida</title>
+<title>Familia MSM · Agenda</title>
 <style>
 :root{
   --bg:#f6f9fc; --card:#fff; --ink:#10213a; --muted:#6c7a90; --line:#e6edf5;
@@ -44,9 +44,9 @@ button{cursor:pointer}
 .day-head .weekday{font-weight:800;color:var(--muted);text-transform:capitalize}
 .event{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:13px 14px;margin:8px 0;box-shadow:0 5px 20px rgba(25,45,75,.05);position:relative}
 .event.sergio{border-left:5px solid #69bdf3}
-.event.maria{border-left:5px solid #f28abb}
-.event.martina{border-left:5px solid #6fd18d}
-.event.familia{border-left:5px solid #f0c855}
+.event.maria{border-left:5px solid #69aaf3}
+.event.martina{border-left:5px solid #f28abb}
+.event.familia{border-left:5px solid #6fd18d}
 .event.conflict{box-shadow:0 0 0 2px #f2535b,0 8px 22px rgba(242,83,91,.14)}
 .event.tight{box-shadow:0 0 0 2px #eab94f,0 8px 22px rgba(234,185,79,.12)}
 .event-top{display:flex;align-items:flex-start;gap:10px}
@@ -83,6 +83,76 @@ textarea{min-height:82px;resize:vertical}
 .settings-box{background:#f7fafc;border:1px solid var(--line);border-radius:18px;padding:14px;margin:12px 0}
 .small{font-size:12px;color:var(--muted)}
 @media (max-width:560px){.grid{grid-template-columns:1fr}.hero h1{font-size:28px}.toolbar{overflow:auto}.month-title{white-space:nowrap}}
+
+/* Cabecera y ajustes */
+.hero{position:relative;padding-right:64px}
+.top-settings{
+  position:absolute; top:18px; right:4px;
+  width:44px; height:44px; border:1px solid var(--line);
+  border-radius:14px; background:rgba(255,255,255,.92);
+  box-shadow:var(--shadow); color:var(--ink); font-size:19px;
+  display:flex; align-items:center; justify-content:center;
+}
+.top-settings:active{transform:scale(.98)}
+
+/* Navegación mensual robusta en móvil */
+.toolbar{
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr) auto 42px;
+  gap:7px;
+  overflow:visible!important;
+}
+.toolbar button{min-width:0}
+.month-title{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  text-align:center;
+  padding:0 2px;
+}
+#todayBtn{white-space:nowrap;padding-left:10px;padding-right:10px}
+
+/* Separación de selector de vista */
+.view-switch{padding-left:8px;padding-right:8px}
+
+/* En modo calendario no mostrar contenido de lista */
+body.calendar-mode #agendaTitle,
+body.calendar-mode #agenda{display:none!important}
+
+/* Campos obligatorios */
+body.calendar-mode #alerts{display:block!important;margin-bottom:10px}
+.required-note{
+  margin:-4px 0 14px;
+  font-size:12px;
+  color:var(--muted);
+}
+.req{color:#c62828;font-weight:900;margin-left:2px}
+.field input:required,
+.field select:required{border-color:#b9c9da}
+.field input:required:focus,
+.field select:required:focus{outline:2px solid rgba(18,100,163,.13);border-color:#1264a3}
+
+@media(max-width:560px){
+  .app{padding-left:10px;padding-right:10px}
+  .hero{padding-left:8px;padding-right:58px}
+  .top-settings{right:4px;top:16px}
+  .toolbar{
+    grid-template-columns:38px minmax(0,1fr) auto 38px;
+    padding:8px;
+    gap:5px;
+  }
+  .toolbar button{padding:9px 8px;border-radius:13px}
+  #todayBtn{font-size:12px;padding-left:8px;padding-right:8px}
+  .month-title{font-size:14px}
+  .view-switch{padding-left:10px;padding-right:10px}
+}
+@media(max-width:390px){
+  .toolbar{grid-template-columns:36px minmax(0,1fr) auto 36px}
+  .month-title{font-size:13px}
+  #todayBtn{font-size:11px;padding-left:7px;padding-right:7px}
+}
+
 </style>
 
 <style id="mobile-card-actions-fix">
@@ -163,113 +233,54 @@ textarea{min-height:82px;resize:vertical}
 </style>
 
 
-<style id="calendar-view-styles">
-.view-toggle{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  margin:10px 0 14px;
-  flex-wrap:wrap;
+<style id="calendar-view-styles-v2">
+.view-switch{display:flex;gap:8px;margin:14px 0 10px}
+.view-switch button{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:9px 13px;font-weight:800}
+.view-switch button.active{background:#1264a3;color:#fff;border-color:#1264a3}
+#calendarView{display:none;margin:10px 0 18px}
+#calendarView.active{display:block}
+#agenda.hidden{display:none!important}
+.calendar-shell{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow)}
+.calendar-head,.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.calendar-head{background:#f7fafc;border-bottom:1px solid var(--line)}
+.calendar-head div{text-align:center;padding:10px 2px;font-size:12px;font-weight:850;color:var(--muted)}
+.calendar-day{min-width:0;min-height:104px;padding:6px;border-right:1px solid #edf1f5;border-bottom:1px solid #edf1f5;background:#fff;overflow:hidden}
+.calendar-day:nth-child(7n){border-right:0}
+.calendar-day.other-month{background:#fafbfd}
+.calendar-date{font-size:12px;font-weight:900;color:var(--ink);margin-bottom:5px}
+.calendar-day.other-month .calendar-date{color:#a8b2c0}
+.cal-event{display:block;width:100%;border:0;border-radius:7px;padding:4px 5px;margin:0 0 4px;text-align:left;font-size:10px;line-height:1.2;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.cal-event.sergio{background:var(--sergio);color:var(--sergio-ink)}
+.cal-event.maria{background:var(--maria);color:var(--maria-ink)}
+.cal-event.martina{background:var(--martina);color:var(--martina-ink)}
+.cal-event.familia{background:var(--familia);color:var(--familia-ink)}
+.cal-more{font-size:9px;color:var(--muted);font-weight:800;padding-left:2px}
+@media(max-width:560px){
+  .view-switch{margin-top:10px}
+  .view-switch button{padding:8px 11px;font-size:13px}
+  .calendar-shell{border-radius:16px}
+  .calendar-head div{font-size:10px;padding:8px 0}
+  .calendar-day{min-height:72px;padding:3px}
+  .calendar-date{font-size:10px;margin-bottom:3px}
+  .cal-event{font-size:0;padding:0;margin:0 0 3px;height:7px;border-radius:999px}
+  .cal-event::after{content:""}
+  .cal-more{font-size:8px;padding:0}
 }
-.view-toggle button{
-  border:1px solid #d7dce3;
-  background:#fff;
-  border-radius:999px;
-  padding:8px 12px;
-  font-weight:700;
-  cursor:pointer;
-}
-.view-toggle button.active{
-  background:#111827;
-  color:#fff;
-  border-color:#111827;
-}
-.calendar-wrap{
-  display:none;
-  background:#fff;
-  border:1px solid #e5e7eb;
-  border-radius:18px;
-  overflow:hidden;
-  margin-top:12px;
-}
-.calendar-wrap.active{display:block;}
-.list-wrap.hidden{display:none!important;}
-.calendar-head{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  background:#f8fafc;
-  border-bottom:1px solid #e5e7eb;
-}
-.calendar-head div{
-  padding:10px 6px;
-  text-align:center;
-  font-size:12px;
-  font-weight:800;
-  color:#667085;
-}
-.calendar-grid{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-}
-.calendar-day{
-  min-height:112px;
-  border-right:1px solid #eef1f4;
-  border-bottom:1px solid #eef1f4;
-  padding:7px;
-  background:#fff;
-}
-.calendar-day:nth-child(7n){border-right:0;}
-.calendar-day.muted{background:#fafafa;}
-.calendar-date{
-  font-size:12px;
-  font-weight:800;
-  margin-bottom:6px;
-  color:#344054;
-}
-.calendar-day.muted .calendar-date{color:#b0b7c3;}
-.cal-event{
-  display:block;
-  border-radius:8px;
-  padding:5px 6px;
-  margin:0 0 5px;
-  font-size:11px;
-  line-height:1.2;
-  font-weight:700;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-  cursor:pointer;
-  border:1px solid transparent;
-}
-.cal-event.sergio{background:var(--sergio);color:var(--sergio-ink);}
-.cal-event.maria{background:var(--maria);color:var(--maria-ink);}
-.cal-event.martina{background:var(--martina);color:var(--martina-ink);}
-.cal-event.familia{background:var(--familia);color:var(--familia-ink);}
-@media(max-width:700px){
-  .calendar-day{min-height:84px;padding:4px;}
-  .calendar-head div{font-size:10px;padding:8px 2px;}
-  .calendar-date{font-size:11px;}
-  .cal-event{font-size:9px;padding:4px;}
+@media(max-width:360px){
+  .calendar-day{min-height:64px;padding:2px}
+  .calendar-head div{font-size:9px}
 }
 </style>
 
+<style>
+#weekly_repeat{accent-color:#1264a3}
+</style>
 </head>
 <body>
-
-<div class="view-toggle" id="viewToggle">
-  <button type="button" id="btnListView" class="active">☷ Lista</button>
-  <button type="button" id="btnCalendarView">🗓 Calendario</button>
-</div>
-<div id="calendarWrap" class="calendar-wrap">
-  <div class="calendar-head">
-    <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
-  </div>
-  <div id="calendarGrid" class="calendar-grid"></div>
-</div>
-
 <div class="app">
   <section class="hero">
-    <h1>Familia Suárez ❤️</h1>
+    <button id="settingsBtn" class="top-settings" type="button" aria-label="Ajustes protegidos" title="Ajustes protegidos">⚙️</button>
+    <h1>Familia MSM ❤️</h1>
     <p>Quién está, quién sale y dónde se nos cruza la agenda.</p>
     <div class="people">
       <button class="person-pill active" data-person="Todos">Todos</button>
@@ -285,11 +296,24 @@ textarea{min-height:82px;resize:vertical}
     <div class="month-title grow" id="monthTitle"></div>
     <button id="todayBtn">Hoy</button>
     <button id="nextBtn">›</button>
-    <button id="settingsBtn">⚙️</button>
+  </div>
+
+  <div class="view-switch" aria-label="Vista de agenda">
+    <button type="button" id="listViewBtn" class="active">☷ Lista</button>
+    <button type="button" id="calendarViewBtn">🗓 Calendario</button>
+  </div>
+
+  <div id="calendarView">
+    <div class="calendar-shell">
+      <div class="calendar-head">
+        <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
+      </div>
+      <div id="calendarGrid" class="calendar-grid"></div>
+    </div>
   </div>
 
   <div id="alerts" class="alerts"></div>
-  <h2 class="section-title">Agenda</h2>
+  <h2 class="section-title" id="agendaTitle">Agenda</h2>
   <div id="agenda"></div>
 </div>
 <button id="addBtn" class="fab" aria-label="Añadir evento">+</button>
@@ -298,13 +322,14 @@ textarea{min-height:82px;resize:vertical}
   <div class="modal">
     <h2 id="eventModalTitle">Añadir evento</h2>
     <form id="eventForm">
+      <p class="required-note"><span class="req">*</span> Campos obligatorios</p>
       <input type="hidden" id="eventId">
       <div class="grid">
         <div class="field full">
-          <label>Título</label><input id="title" required placeholder="Ej. Dentista">
+          <label>Título <span class="req">*</span></label><input id="title" required placeholder="Ej. Dentista">
         </div>
         <div class="field">
-          <label>Persona</label>
+          <label>Persona <span class="req">*</span></label>
           <select id="person" required>
             <option>Sergio</option><option>María</option><option>Martina</option><option value="Familia">Trabajo</option>
           </select>
@@ -316,7 +341,16 @@ textarea{min-height:82px;resize:vertical}
             <option>Inglés</option><option>Deporte</option><option>Personal</option><option>Otro</option>
           </select>
         </div>
-        <div class="field"><label>Fecha</label><input id="date" type="date" required></div>
+        <div class="field"><label>Fecha <span class="req">*</span></label><input id="date" type="date" required></div>
+
+      <div class="field">
+        <label for="weekly_repeat">Repetición</label>
+        <label style="display:flex;align-items:center;gap:8px;font-weight:700">
+          <input id="weekly_repeat" type="checkbox" style="width:auto">
+          Se repite semanalmente
+        </label>
+      </div>
+
         <div class="field"><label>Todo el día</label><select id="allDay"><option value="false">No</option><option value="true">Sí</option></select></div>
         <div class="field"><label>Hora inicio</label><input id="startTime" type="time"></div>
         <div class="field"><label>Hora fin</label><input id="endTime" type="time"></div>
@@ -336,7 +370,7 @@ textarea{min-height:82px;resize:vertical}
 
 <div id="settingsModal" class="modal-backdrop">
   <div class="modal">
-    <h2>Compartir la agenda</h2>
+    <h2>Ajustes</h2>
     <p>La app ya viene conectada a vuestra agenda compartida de Supabase. Sergio, María y Martina veréis y editaréis <b>la misma agenda</b> desde cualquier dispositivo que abra esta web.</p>
     <div class="settings-box">
       <div class="field"><label>Supabase Project URL</label><input id="supabaseUrl" placeholder="https://xxxxx.supabase.co"></div>
@@ -356,8 +390,10 @@ textarea{min-height:82px;resize:vertical}
 </div>
 
 <script>
+const SETTINGS_PIN = "MSM2026";
 const INITIAL_EVENTS = [
-  {id:"e0914cluster",title:"Junta General del Clúster TIC",person:"Sergio",category:"Trabajo",date:"2026-09-14",allDay:true,startTime:"",endTime:"",location:"Gijón",away:true,conditional:false,notes:"Come en Gijón"},
+  {id:"e0914cluster",title:"Junta General del Clúster TIC",person:"Sergio",category:"Trabajo",date:"2026-09-14",allDay:true,startTime:"",endTime:"",location:"Gijón",away:true,conditional:false,
+    weekly_repeat:$("#weekly_repeat")?.checked||false,notes:"Come en Gijón"},
   {id:"e0914baile",title:"Apuntarnos a clases de baile",person:"Familia",category:"Familia",date:"2026-09-14",allDay:true,startTime:"",endTime:"",location:"",away:false,conditional:false,notes:"Sergio + María"},
   {id:"e0914psico",title:"Psicólogo",person:"María",category:"Salud",date:"2026-09-14",allDay:true,startTime:"",endTime:"",location:"",away:true,conditional:false,notes:"Hora por confirmar"},
   {id:"e0915oft",title:"Oftalmólogo",person:"Martina",category:"Salud",date:"2026-09-15",allDay:false,startTime:"13:00",endTime:"",location:"",away:true,conditional:false,notes:"Hora aproximada"},
@@ -486,7 +522,7 @@ function monthEvents(){
   }).sort((a,b)=>a.date.localeCompare(b.date)||(a.allDay?-1:1)||(a.startTime||"").localeCompare(b.startTime||""));
 }
 function render(){
-  $("#monthTitle").textContent=fmtMonth(state.month)+(state.remote?" · compartido":" · local");
+  $("#monthTitle").textContent=fmtMonth(state.month);
   const evs=monthEvents();
   const {map,alerts}=conflictInfo(evs);
   $("#alerts").innerHTML=alerts.slice(0,4).map(a=>`<div class="alert ${a.type}">${a.type==="danger"?"⚠️":"⏱️"}<div>${a.text}</div></div>`).join("");
@@ -625,7 +661,12 @@ $("#deleteEvent").onclick=async()=>{
   catch(e){alert("No se pudo eliminar: "+e.message)}
 };
 
-$("#settingsBtn").onclick=()=>{$("#supabaseUrl").value=state.supabaseUrl;$("#supabaseKey").value=state.supabaseKey;$("#settingsModal").classList.add("show")}
+$("#settingsBtn").onclick=()=>{
+  const pin=prompt("Introduce la clave de ajustes:");
+  if(pin===null) return;
+  if(pin!==SETTINGS_PIN){ alert("Clave incorrecta"); return; }
+  $("#settingsModal").classList.add("show");
+};
 $("#closeSettings").onclick=()=>$("#settingsModal").classList.remove("show");
 $("#settingsModal").onclick=e=>{if(e.target.id==="settingsModal")$("#settingsModal").classList.remove("show")}
 $("#saveSettings").onclick=async()=>{
@@ -650,129 +691,61 @@ $("#importFile").onchange=async e=>{
 loadEvents();
 </script>
 
-<script id="calendar-view-script">
+<script id="calendar-view-script-v2">
 (function(){
-  function getEventsArray(){
-    try{
-      if (typeof state !== "undefined" && Array.isArray(state.events)) return state.events;
-      if (typeof events !== "undefined" && Array.isArray(events)) return events;
-    }catch(e){}
-    return [];
-  }
-
-  function monthCursor(){
-    try{
-      if (typeof state !== "undefined" && state.month){
-        const s = state.month;
-        if (/^\d{4}-\d{2}$/.test(s)) return new Date(s+"-01T12:00:00");
-      }
-    }catch(e){}
+  function pclass(p){return p==="Sergio"?"sergio":p==="María"?"maria":p==="Martina"?"martina":"familia"}
+  function currentMonth(){
+    if(typeof state!=="undefined" && state.month instanceof Date) return new Date(state.month);
     return new Date();
   }
-
-  function personClass(person){
-    if(person==="María") return "maria";
-    if(person==="Martina") return "martina";
-    if(person==="Familia" || person==="Trabajo") return "familia";
-    return "sergio";
-  }
-
-  function displayPerson(person){
-    return (person==="Familia"||person==="Trabajo") ? "Trabajo" : person;
-  }
-
-  function renderCalendarView(){
-    const grid=document.getElementById("calendarGrid");
-    if(!grid) return;
-
-    const base=monthCursor();
-    const year=base.getFullYear(), month=base.getMonth();
-    const first=new Date(year,month,1);
-    const mondayIndex=(first.getDay()+6)%7;
-    const start=new Date(year,month,1-mondayIndex);
-
-    const evs=getEventsArray();
-    grid.innerHTML="";
-
+  function renderCalendar(){
+    const grid=document.getElementById('calendarGrid');
+    if(!grid || typeof state==='undefined') return;
+    const base=currentMonth(), y=base.getFullYear(), m=base.getMonth();
+    const first=new Date(y,m,1,12), offset=(first.getDay()+6)%7;
+    const start=new Date(y,m,1-offset,12);
+    const evs=(state.events||[]).filter(e=>state.filter==='Todos'||e.person===state.filter);
+    grid.innerHTML='';
     for(let i=0;i<42;i++){
-      const d=new Date(start);
-      d.setDate(start.getDate()+i);
-      const iso=d.toISOString().slice(0,10);
-      const cell=document.createElement("div");
-      cell.className="calendar-day"+(d.getMonth()!==month?" muted":"");
-
-      const date=document.createElement("div");
-      date.className="calendar-date";
-      date.textContent=d.getDate();
-      cell.appendChild(date);
-
-      const dayEvents=evs.filter(e=>e.date===iso).sort((a,b)=>(a.start_time||"99:99").localeCompare(b.start_time||"99:99"));
-      dayEvents.forEach(e=>{
-        const chip=document.createElement("div");
-        chip.className="cal-event "+personClass(e.person);
-        const time=e.all_day ? "" : (e.start_time ? e.start_time.slice(0,5)+" " : "");
-        chip.textContent=time + (e.title||"Evento");
-        chip.title=(displayPerson(e.person)+" · "+(e.title||"Evento"));
-        chip.addEventListener("click",()=>{
-          try{
-            if(typeof openEdit==="function") return openEdit(e.id);
-            if(typeof editEvent==="function") return editEvent(e.id);
-          }catch(err){}
-        });
-        cell.appendChild(chip);
+      const d=new Date(start); d.setDate(start.getDate()+i);
+      const iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+      const cell=document.createElement('div');
+      cell.className='calendar-day'+(d.getMonth()!==m?' other-month':'');
+      const num=document.createElement('div'); num.className='calendar-date'; num.textContent=d.getDate(); cell.appendChild(num);
+      const list=evs.filter(e=>e.date===iso).sort((a,b)=>(a.startTime||'99:99').localeCompare(b.startTime||'99:99'));
+      const limit=window.innerWidth<=560?4:5;
+      list.slice(0,limit).forEach(e=>{
+        const b=document.createElement('button'); b.type='button'; b.className='cal-event '+pclass(e.person);
+        const t=e.allDay?'':(e.startTime?e.startTime.slice(0,5)+' ': '');
+        b.textContent=t+(e.title||'Evento');
+        b.title=(e.person==='Familia'?'Trabajo':e.person)+' · '+(e.title||'Evento');
+        b.onclick=()=>{ if(typeof openEvent==='function') openEvent(e.id); };
+        cell.appendChild(b);
       });
-
+      if(list.length>limit){const more=document.createElement('div');more.className='cal-more';more.textContent='+'+(list.length-limit);cell.appendChild(more)}
       grid.appendChild(cell);
     }
   }
-
   function setView(mode){
-    const cal=document.getElementById("calendarWrap");
-    const listBtn=document.getElementById("btnListView");
-    const calBtn=document.getElementById("btnCalendarView");
-    const list=document.getElementById("agendaList") || document.querySelector(".agenda-list");
-    if(mode==="calendar"){
-      if(cal) cal.classList.add("active");
-      if(list) list.classList.add("hidden");
-      if(calBtn) calBtn.classList.add("active");
-      if(listBtn) listBtn.classList.remove("active");
-      renderCalendarView();
-    }else{
-      if(cal) cal.classList.remove("active");
-      if(list) list.classList.remove("hidden");
-      if(calBtn) calBtn.classList.remove("active");
-      if(listBtn) listBtn.classList.add("active");
-    }
-    localStorage.setItem("family_view_mode",mode);
+    const agenda=document.getElementById('agenda'), cal=document.getElementById('calendarView');
+    const lb=document.getElementById('listViewBtn'), cb=document.getElementById('calendarViewBtn');
+    const isCal=mode==='calendar';
+    document.body.classList.toggle('calendar-mode', isCal);
+    agenda?.classList.toggle('hidden',isCal); cal?.classList.toggle('active',isCal);
+    lb?.classList.toggle('active',!isCal); cb?.classList.toggle('active',isCal);
+    localStorage.setItem('family_view_mode',mode);
+    if(isCal) renderCalendar();
   }
-
-  document.addEventListener("DOMContentLoaded",()=>{
-    const a=document.getElementById("btnListView");
-    const b=document.getElementById("btnCalendarView");
-    if(a) a.addEventListener("click",()=>setView("list"));
-    if(b) b.addEventListener("click",()=>setView("calendar"));
-    const saved=localStorage.getItem("family_view_mode")||"list";
-    setView(saved);
-    setTimeout(renderCalendarView,700);
+  document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('listViewBtn')?.addEventListener('click',()=>setView('list'));
+    document.getElementById('calendarViewBtn')?.addEventListener('click',()=>setView('calendar'));
+    setView(localStorage.getItem('family_view_mode')||'list');
+    window.addEventListener('resize',()=>{if(document.getElementById('calendarView')?.classList.contains('active')) renderCalendar()});
+    setTimeout(renderCalendar,300);
   });
-
-  window.renderCalendarView=renderCalendarView;
-
-  // Re-render calendar after common render functions run.
-  ["render","renderEvents","renderAgenda","refreshUI"].forEach(name=>{
-    try{
-      const fn=window[name];
-      if(typeof fn==="function" && !fn.__calendarWrapped){
-        const wrapped=function(){
-          const r=fn.apply(this,arguments);
-          setTimeout(renderCalendarView,0);
-          return r;
-        };
-        wrapped.__calendarWrapped=true;
-        window[name]=wrapped;
-      }
-    }catch(e){}
-  });
+  window.renderCalendarView=renderCalendar;
+  const observer=new MutationObserver(()=>{if(document.getElementById('calendarView')?.classList.contains('active')) renderCalendar()});
+  document.addEventListener('DOMContentLoaded',()=>{const a=document.getElementById('agenda'); if(a) observer.observe(a,{childList:true,subtree:true})});
 })();
 </script>
 
