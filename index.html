@@ -307,10 +307,205 @@ body.calendar-mode main{
   .quick-actions button{flex:1 1 auto}
 }
 </style>
+<style>
+/* Instalar / añadir a pantalla de inicio */
+.install-btn{
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.95);
+  border-radius:14px;
+  padding:10px 12px;
+  font-weight:800;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  box-shadow:var(--shadow);
+}
+.install-help{
+  font-size:14px;
+  line-height:1.5;
+}
+.install-steps{
+  background:#f8fafc;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px 14px;
+  margin-top:12px;
+}
+.install-steps b{color:var(--ink)}
+@media(max-width:560px){
+  .install-btn{padding:9px 11px;font-size:13px}
+}
+</style>
+
+<style id="smart-actions-layout">
+.smart-actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:flex-start;
+  flex-wrap:wrap;
+  padding:0 8px;
+  margin:12px 0 10px;
+}
+.smart-actions .quick-create-btn{
+  background:#111827;
+  color:#fff;
+  border:none;
+}
+.smart-actions .quick-create-btn,
+.smart-actions .install-btn{
+  min-height:42px;
+}
+@media(max-width:560px){
+  .smart-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    padding:0 10px;
+  }
+  .smart-actions .quick-create-btn,
+  .smart-actions .install-btn{
+    width:100%;
+    justify-content:center;
+    text-align:center;
+    font-size:12px;
+    padding:9px 8px;
+  }
+}
+@media(max-width:380px){
+  .smart-actions{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+
+
+<style id="header-install-and-smart-button">
+.top-install{
+  position:absolute;
+  top:18px;
+  right:54px;
+  width:44px;
+  height:44px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:rgba(255,255,255,.92);
+  box-shadow:var(--shadow);
+  color:var(--ink);
+  font-size:19px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+.smart-actions{
+  grid-template-columns:1fr !important;
+}
+.smart-actions .quick-create-btn{
+  background:linear-gradient(135deg,#6d5dfc,#9b5de5) !important;
+  color:#fff !important;
+  border:0 !important;
+  box-shadow:0 8px 20px rgba(109,93,252,.22) !important;
+}
+@media(max-width:560px){
+  .top-install{top:16px;right:54px}
+  .smart-actions .quick-create-btn{
+    width:100%;
+    font-size:13px;
+    min-height:44px;
+  }
+}
+</style>
+
+
+<style id="mobile-event-form-fix">
+/* Evita el zoom automático de iOS al escribir */
+@media (max-width: 700px){
+  input,
+  select,
+  textarea{
+    font-size:16px !important;
+  }
+
+  /* El formulario de evento se convierte en una hoja casi a pantalla completa */
+  #eventModal{
+    align-items:flex-end !important;
+    padding:0 !important;
+  }
+
+  #eventModal .modal-card{
+    width:100% !important;
+    max-width:none !important;
+    height:min(92dvh, 760px) !important;
+    max-height:92dvh !important;
+    border-radius:22px 22px 0 0 !important;
+    margin:0 !important;
+    overflow:hidden !important;
+    display:flex !important;
+    flex-direction:column !important;
+  }
+
+  #eventModal .modal-head{
+    flex:0 0 auto;
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:#fff;
+    padding-top:14px !important;
+    padding-bottom:10px !important;
+    border-bottom:1px solid var(--line);
+  }
+
+  #eventModal form{
+    flex:1 1 auto;
+    min-height:0;
+    overflow-y:auto !important;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:16px;
+  }
+
+  #eventModal .modal-actions{
+    flex:0 0 auto;
+    position:sticky;
+    bottom:0;
+    z-index:20;
+    background:#fff;
+    border-top:1px solid var(--line);
+    padding-top:10px !important;
+    padding-bottom:max(10px, env(safe-area-inset-bottom)) !important;
+  }
+
+  #eventModal .field{
+    margin-bottom:12px !important;
+  }
+
+  #eventModal input,
+  #eventModal select,
+  #eventModal textarea{
+    min-height:44px;
+  }
+
+  #eventModal textarea{
+    min-height:88px;
+  }
+}
+
+/* Con el teclado abierto, aprovechar mejor la altura real disponible */
+@supports (height: 100dvh){
+  @media (max-width: 700px){
+    #eventModal .modal-card{
+      height:92dvh !important;
+      max-height:92dvh !important;
+    }
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="app">
   <section class="hero">
+    <button id="installAppBtn" class="top-install" type="button" aria-label="Instalar app" title="Instalar app">📲</button>
     <button id="settingsBtn" class="top-settings" type="button" aria-label="Ajustes protegidos" title="Ajustes protegidos">⚙️</button>
     <h1>Familia MSM ❤️</h1>
     <p>Quién está, quién sale y dónde se nos cruza la agenda.</p>
@@ -328,6 +523,11 @@ body.calendar-mode main{
     <div class="month-title grow" id="monthTitle"></div>
     <button id="todayBtn">Hoy</button>
     <button id="nextBtn">›</button>
+  </div>
+
+
+  <div class="smart-actions">
+    <button id="quickCreateBtn" class="quick-create-btn" type="button">✨ Asistente de eventos</button>
   </div>
 
   <div class="view-switch" aria-label="Vista de agenda">
@@ -349,7 +549,7 @@ body.calendar-mode main{
   <div id="agenda"></div>
 </div>
 <button id="addBtn" class="fab" aria-label="Añadir evento">+</button>
-<button id="quickCreateBtn" class="quick-create-btn" type="button">✨ Crear rápido</button>
+
 
 <div id="eventModal" class="modal-backdrop">
   <div class="modal">
@@ -780,7 +980,7 @@ loadEvents();
   document.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('listViewBtn')?.addEventListener('click',()=>setView('list'));
     document.getElementById('calendarViewBtn')?.addEventListener('click',()=>setView('calendar'));
-    setView(localStorage.getItem('family_view_mode')||'list');
+    setView('calendar');
     window.addEventListener('resize',()=>{if(document.getElementById('calendarView')?.classList.contains('active')) renderCalendar()});
     setTimeout(renderCalendar,300);
   });
@@ -958,6 +1158,98 @@ document.addEventListener("DOMContentLoaded",()=>{
       r.onerror=()=>alert("No se pudo reconocer la voz. Puedes usar el dictado del teclado.");
       r.onend=()=>{if(b)b.textContent="🎙️ Dictar"};
       r.start();
+    });
+  });
+})();
+</script>
+
+
+<div class="modal" id="installModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h2>📲 Poner Familia MSM en inicio</h2>
+      <button class="icon-btn" id="closeInstall" type="button">✕</button>
+    </div>
+    <div class="install-help" id="installHelp">
+      <div id="iosInstallHelp" class="install-steps" style="display:none">
+        <b>En iPhone:</b><br>
+        1. Pulsa el botón <b>Compartir</b> de Safari (cuadrado con flecha hacia arriba).<br>
+        2. Baja y toca <b>Añadir a pantalla de inicio</b>.<br>
+        3. Pulsa <b>Añadir</b>.<br><br>
+        Después tendrás Familia MSM como un icono más del iPhone.
+      </div>
+      <div id="androidInstallHelp" class="install-steps" style="display:none">
+        <b>En Android:</b><br>
+        Si tu navegador permite instalación directa, pulsa <b>Instalar</b> en el aviso que aparecerá.
+        Si no aparece, abre el menú del navegador y elige <b>Añadir a pantalla de inicio</b> o <b>Instalar aplicación</b>.
+      </div>
+      <div id="desktopInstallHelp" class="install-steps" style="display:none">
+        Abre esta misma dirección desde tu móvil y pulsa de nuevo <b>📲 Instalar app</b>.
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" id="nativeInstallBtn" class="primary" style="display:none">Instalar</button>
+      <button type="button" id="okInstallBtn">Entendido</button>
+    </div>
+  </div>
+</div>
+
+
+<script id="install-app-helper">
+(function(){
+  let deferredInstallPrompt=null;
+  const qs=s=>document.querySelector(s);
+
+  window.addEventListener("beforeinstallprompt",(e)=>{
+    e.preventDefault();
+    deferredInstallPrompt=e;
+  });
+
+  function isIOS(){
+    return /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+      (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
+  }
+  function isAndroid(){return /android/i.test(navigator.userAgent)}
+  function isStandalone(){
+    return window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone===true;
+  }
+
+  function openInstall(){
+    if(isStandalone()){
+      alert("Familia MSM ya está abierta como aplicación desde la pantalla de inicio.");
+      return;
+    }
+    const modal=qs("#installModal");
+    const ios=qs("#iosInstallHelp"), android=qs("#androidInstallHelp"), desktop=qs("#desktopInstallHelp");
+    const nativeBtn=qs("#nativeInstallBtn");
+    if(ios)ios.style.display="none";
+    if(android)android.style.display="none";
+    if(desktop)desktop.style.display="none";
+    if(nativeBtn)nativeBtn.style.display="none";
+
+    if(isIOS()){
+      if(ios)ios.style.display="block";
+    }else if(isAndroid()){
+      if(android)android.style.display="block";
+      if(deferredInstallPrompt && nativeBtn) nativeBtn.style.display="inline-flex";
+    }else{
+      if(deferredInstallPrompt && nativeBtn) nativeBtn.style.display="inline-flex";
+      else if(desktop)desktop.style.display="block";
+    }
+    modal?.classList.add("show");
+  }
+
+  document.addEventListener("DOMContentLoaded",()=>{
+    qs("#installAppBtn")?.addEventListener("click",openInstall);
+    qs("#closeInstall")?.addEventListener("click",()=>qs("#installModal")?.classList.remove("show"));
+    qs("#okInstallBtn")?.addEventListener("click",()=>qs("#installModal")?.classList.remove("show"));
+    qs("#nativeInstallBtn")?.addEventListener("click",async()=>{
+      if(!deferredInstallPrompt)return;
+      deferredInstallPrompt.prompt();
+      try{await deferredInstallPrompt.userChoice}catch(e){}
+      deferredInstallPrompt=null;
+      qs("#installModal")?.classList.remove("show");
     });
   });
 })();
