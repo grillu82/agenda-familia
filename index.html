@@ -789,11 +789,14 @@ body.calendar-mode #alerts{
 }
 </style>
 
+
+<style id="install-ui-removed">
+#installAppBtn,#installModal{display:none !important}
+</style>
 </head>
 <body>
 <div class="app">
   <section class="hero">
-    <button id="installAppBtn" class="top-install" type="button" aria-label="Instalar app" title="Instalar app">📲</button>
     <button id="settingsBtn" class="top-settings" type="button" aria-label="Ajustes protegidos" title="Ajustes protegidos">⚙️</button>
     <h1>Familia MSM ❤️</h1>
     <p>Quién está, quién sale y dónde se nos cruza la agenda.</p>
@@ -884,7 +887,9 @@ body.calendar-mode #alerts{
         <div class="field"><label>Hora inicio</label><input id="startTime" type="time"></div>
         <div class="field"><label>Hora fin</label><input id="endTime" type="time"></div>
         <div class="field full"><label>Lugar</label><input id="location" placeholder="Ej. Gijón"></div>
-        <div class="field"><label>¿Fuera de casa?</label><select id="away"><option value="false">No</option><option value="true">Sí</option></select></div>
+        <div class="field"><label>¿Fuera de casa? <span class="small">(duermo fuera)</span></label><select id="away"><option value="false">No</option><option value="true">Sí</option></select></div>
+        <div class="field"><label>¿No como en casa?</label><select id="noLunch"><option value="false">No</option><option value="true">Sí</option></select></div>
+        <div class="field"><label>¿No ceno en casa?</label><select id="noDinner"><option value="false">No</option><option value="true">Sí</option></select></div>
         <div class="field"><label>¿Condicional?</label><select id="conditional"><option value="false">No</option><option value="true">Sí</option></select></div>
         
         <div class="field full">
@@ -1150,10 +1155,22 @@ function addToCalendar(id){
 function escapeHtml(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 
 function isWeeklyEvent(e){return /\[\[WEEKLY\]\]/.test(e?.notes||"")}
-function cleanEventNotes(s){return String(s||"").replace(/\s*\[\[WEEKLY\]\]\s*/g,"").trim()}
-function storedEventNotes(notes,weekly){
+function noLunchEvent(e){return /\[\[NO_LUNCH\]\]/.test(e?.notes||"")}
+function noDinnerEvent(e){return /\[\[NO_DINNER\]\]/.test(e?.notes||"")}
+function cleanEventNotes(s){
+  return String(s||"")
+    .replace(/\s*\[\[WEEKLY\]\]\s*/g,"")
+    .replace(/\s*\[\[NO_LUNCH\]\]\s*/g,"")
+    .replace(/\s*\[\[NO_DINNER\]\]\s*/g,"")
+    .trim();
+}
+function storedEventNotes(notes,weekly,noLunch,noDinner){
   const clean=cleanEventNotes(notes);
-  return weekly ? (clean ? clean+"\n[[WEEKLY]]" : "[[WEEKLY]]") : clean;
+  const markers=[];
+  if(weekly) markers.push("[[WEEKLY]]");
+  if(noLunch) markers.push("[[NO_LUNCH]]");
+  if(noDinner) markers.push("[[NO_DINNER]]");
+  return [clean,...markers].filter(Boolean).join("\n");
 }
 
 
@@ -1171,7 +1188,13 @@ function openEvent(id=null){
   $("#title").value=e?.title||""; $("#person").value=e?.person||"Sergio"; $("#category").value=e?.category||"Otro";
   $("#date").value=e?.date||new Date().toISOString().slice(0,10); $("#allDay").value=String(!!e?.allDay);
   $("#startTime").value=e?.startTime||""; $("#endTime").value=e?.endTime||""; $("#location").value=e?.location||"";
-  $("#away").value=String(!!e?.away); $("#conditional").value=String(!!e?.conditional); $("#notes").value=cleanEventNotes(e?.notes||"");
+  $("#away").value=String(!!e?.away);
+  // Si ya duerme fuera y el evento es antiguo (sin marcadores de comidas),
+  // mostramos ambas comidas fuera por defecto.
+  const hasMealMarkers=!!(e && (/\[\[NO_LUNCH\]\]|\[\[NO_DINNER\]\]/.test(e.notes||"")));
+  $("#noLunch").value=String(!!(e && (noLunchEvent(e) || (e.away && !hasMealMarkers))));
+  $("#noDinner").value=String(!!(e && (noDinnerEvent(e) || (e.away && !hasMealMarkers))));
+  $("#conditional").value=String(!!e?.conditional); $("#notes").value=cleanEventNotes(e?.notes||"");
   $("#weeklyRepeat").checked=!!(e&&isWeeklyEvent(e));
   $("#deleteEvent").style.display=e?"inline-block":"none";
   $("#eventModal").classList.add("show");
@@ -1188,6 +1211,12 @@ $("#person").addEventListener("change",()=>{
 $("#allDay").addEventListener("change",()=>{
   if($("#allDay").value==="true"){ $("#startTime").value=""; $("#endTime").value=""; }
 });
+$("#away").addEventListener("change",()=>{
+  if($("#away").value==="true"){
+    $("#noLunch").value="true";
+    $("#noDinner").value="true";
+  }
+});
 $("#cancelEvent").onclick=()=>$("#eventModal").classList.remove("show");
 $("#eventModal").onclick=e=>{if(e.target.id==="eventModal")$("#eventModal").classList.remove("show")}
 
@@ -1201,7 +1230,13 @@ $("#eventForm").onsubmit=async ev=>{
   const allDay=(!startTime&&!endTime)&&$("#allDay").value==="true";
   const obj={id,title:$("#title").value.trim(),person:$("#person").value,category:$("#category").value,date:$("#date").value,
     allDay,startTime,endTime,location:$("#location").value.trim(),
-    away:$("#away").value==="true",conditional:$("#conditional").value==="true",notes:storedEventNotes($("#notes").value.trim(),$("#weeklyRepeat").checked)};
+    away:$("#away").value==="true",conditional:$("#conditional").value==="true",
+    notes:storedEventNotes(
+      $("#notes").value.trim(),
+      $("#weeklyRepeat").checked,
+      $("#noLunch").value==="true",
+      $("#noDinner").value==="true"
+    )};
   const ix=state.events.findIndex(x=>x.id===id);
   try{
     if(state.remote){
@@ -1223,9 +1258,16 @@ $("#eventForm").onsubmit=async ev=>{
 };
 $("#deleteEvent").onclick=async()=>{
   const id=$("#eventId").value;if(!id)return;
-  if(!confirm("¿Eliminar este evento?"))return;
-  try{if(state.remote)await deleteRemote(id);state.events=state.events.filter(x=>x.id!==id);if(!state.remote)saveLocal();$("#eventModal").classList.remove("show");render()}
-  catch(e){alert("No se pudo eliminar: "+e.message)}
+  const ev=state.events.find(x=>x.id===id);
+  const nombre=ev?.title?`“${ev.title}”`:"este evento";
+  if(!confirm(`¿Seguro que quieres eliminar ${nombre}?\n\nEsta acción no se puede deshacer.`))return;
+  try{
+    if(state.remote)await deleteRemote(id);
+    state.events=state.events.filter(x=>x.id!==id);
+    if(!state.remote)saveLocal();
+    $("#eventModal").classList.remove("show");
+    render();
+  }catch(e){alert("No se pudo eliminar: "+e.message)}
 };
 
 $("#settingsBtn").onclick=()=>{
@@ -1670,80 +1712,6 @@ document.addEventListener("DOMContentLoaded",()=>{
     </div>
   </div>
 </div>
-
-<script id="install-app-helper">
-(function(){
-  let deferredInstallPrompt=null;
-  const q=s=>document.querySelector(s);
-
-  function isIOS(){
-    return /iphone|ipad|ipod/i.test(navigator.userAgent) ||
-      (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
-  }
-  function isAndroid(){
-    return /android/i.test(navigator.userAgent);
-  }
-  function isStandalone(){
-    return window.matchMedia("(display-mode: standalone)").matches ||
-      window.navigator.standalone===true;
-  }
-
-  window.addEventListener("beforeinstallprompt",(e)=>{
-    e.preventDefault();
-    deferredInstallPrompt=e;
-  });
-
-  function closeInstall(){
-    q("#installModal")?.classList.remove("show");
-  }
-
-  function openInstall(){
-    if(isStandalone()){
-      alert("Familia MSM ya está añadida y abierta como aplicación.");
-      return;
-    }
-
-    const modal=q("#installModal");
-    const ios=q("#iosInstallHelp");
-    const android=q("#androidInstallHelp");
-    const desktop=q("#desktopInstallHelp");
-    const nativeBtn=q("#nativeInstallBtn");
-
-    if(ios) ios.style.display="none";
-    if(android) android.style.display="none";
-    if(desktop) desktop.style.display="none";
-    if(nativeBtn) nativeBtn.style.display="none";
-
-    if(isIOS()){
-      if(ios) ios.style.display="block";
-    }else if(isAndroid()){
-      if(android) android.style.display="block";
-      if(deferredInstallPrompt && nativeBtn) nativeBtn.style.display="inline-flex";
-    }else{
-      if(deferredInstallPrompt && nativeBtn) nativeBtn.style.display="inline-flex";
-      else if(desktop) desktop.style.display="block";
-    }
-
-    modal?.classList.add("show");
-  }
-
-  document.addEventListener("DOMContentLoaded",()=>{
-    q("#installAppBtn")?.addEventListener("click",openInstall);
-    q("#closeInstall")?.addEventListener("click",closeInstall);
-    q("#okInstallBtn")?.addEventListener("click",closeInstall);
-    q("#installModal")?.addEventListener("click",(e)=>{
-      if(e.target.id==="installModal") closeInstall();
-    });
-    q("#nativeInstallBtn")?.addEventListener("click",async()=>{
-      if(!deferredInstallPrompt) return;
-      deferredInstallPrompt.prompt();
-      try{ await deferredInstallPrompt.userChoice; }catch(e){}
-      deferredInstallPrompt=null;
-      closeInstall();
-    });
-  });
-})();
-</script>
 
 </body>
 </html>
