@@ -288,6 +288,25 @@ body.calendar-mode main{
   flex-direction:column;
 }
 </style>
+<style>
+/* Creación rápida por texto/voz */
+.quick-create-btn{
+  border:0;background:#111827;color:#fff;border-radius:14px;
+  padding:10px 14px;font-weight:800;box-shadow:var(--shadow);
+  display:inline-flex;align-items:center;gap:7px;
+}
+.quick-box{padding:4px 0 0}
+.quick-box textarea{
+  width:100%;min-height:118px;resize:vertical;border:1px solid var(--line);
+  border-radius:14px;padding:12px;font:inherit;line-height:1.4;
+}
+.quick-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.quick-hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.4}
+@media(max-width:560px){
+  .quick-create-btn{padding:9px 11px;font-size:13px}
+  .quick-actions button{flex:1 1 auto}
+}
+</style>
 </head>
 <body>
 <div class="app">
@@ -330,6 +349,7 @@ body.calendar-mode main{
   <div id="agenda"></div>
 </div>
 <button id="addBtn" class="fab" aria-label="Añadir evento">+</button>
+<button id="quickCreateBtn" class="quick-create-btn" type="button">✨ Crear rápido</button>
 
 <div id="eventModal" class="modal-backdrop">
   <div class="modal">
@@ -784,6 +804,163 @@ document.addEventListener("DOMContentLoaded",()=>{
     });
   }
 });
+</script>
+
+
+<div class="modal" id="quickModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h2>✨ Crear evento rápido</h2>
+      <button class="icon-btn" id="closeQuick" type="button">✕</button>
+    </div>
+    <div class="quick-box">
+      <textarea id="quickText" placeholder="Ej.: Martina entrenamiento mañana de 18:30 a 20:00 en Olivares"></textarea>
+      <div class="quick-actions">
+        <button type="button" id="voiceQuick">🎙️ Dictar</button>
+        <button type="button" class="primary" id="interpretQuick">✨ Interpretar</button>
+      </div>
+      <div class="quick-hint">
+        Entiende personas, hoy/mañana/pasado mañana, días de la semana, fechas como “23 de septiembre”,
+        horas como “a las 17:30” o “de 18:30 a 20:00”, lugares con “en…” y expresiones como
+        “todos los lunes” o “cada miércoles”. Siempre podrás revisar el formulario antes de guardar.
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script id="quick-create-local">
+(function(){
+  const $q=s=>document.querySelector(s);
+  const MONTHS={
+    enero:0,febrero:1,marzo:2,abril:3,mayo:4,junio:5,julio:6,
+    agosto:7,septiembre:8,setiembre:8,octubre:9,noviembre:10,diciembre:11
+  };
+  const DAYS={domingo:0,lunes:1,martes:2,"miércoles":3,miercoles:3,jueves:4,viernes:5,"sábado":6,sabado:6};
+
+  function pad(n){return String(n).padStart(2,"0")}
+  function iso(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+  function normalize(s){return String(s||"").trim().replace(/\s+/g," ")}
+  function nextWeekday(base,target){
+    const d=new Date(base); let diff=(target-d.getDay()+7)%7;
+    if(diff===0) diff=7;
+    d.setDate(d.getDate()+diff); return d;
+  }
+  function parseDate(s){
+    const low=s.toLowerCase();
+    const now=new Date();
+    let d=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+    if(/\bpasado mañana\b/.test(low)){d.setDate(d.getDate()+2);return iso(d)}
+    if(/\bmañana\b/.test(low)){d.setDate(d.getDate()+1);return iso(d)}
+    if(/\bhoy\b/.test(low)) return iso(d);
+
+    let m=low.match(/\b(\d{1,2})\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)(?:\s+de\s+(\d{4}))?/);
+    if(m){
+      let y=m[3]?+m[3]:now.getFullYear();
+      let dd=new Date(y,MONTHS[m[2]],+m[1]);
+      if(!m[3] && dd < d) dd.setFullYear(y+1);
+      return iso(dd);
+    }
+    m=low.match(/\b(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?\b/);
+    if(m){
+      let y=m[3]?+m[3]:now.getFullYear(); if(y<100)y+=2000;
+      let dd=new Date(y,+m[2]-1,+m[1]); if(!m[3]&&dd<d)dd.setFullYear(y+1);
+      return iso(dd);
+    }
+    for(const [name,num] of Object.entries(DAYS)){
+      if(new RegExp("\\b"+name+"\\b").test(low)) return iso(nextWeekday(d,num));
+    }
+    return iso(d);
+  }
+  function parseTimes(s){
+    const low=s.toLowerCase().replace(/\./g,":");
+    let m=low.match(/\bde\s+(\d{1,2})(?::(\d{2}))?\s*(?:h|horas?)?\s+a\s+(?:las\s+)?(\d{1,2})(?::(\d{2}))?/);
+    if(m) return {start:pad(+m[1])+":"+pad(+(m[2]||0)),end:pad(+m[3])+":"+pad(+(m[4]||0))};
+    m=low.match(/\ba\s+las?\s+(\d{1,2})(?::(\d{2}))?/);
+    if(m) return {start:pad(+m[1])+":"+pad(+(m[2]||0)),end:""};
+    m=low.match(/\b(\d{1,2}):(\d{2})\b/);
+    return m?{start:pad(+m[1])+":"+m[2],end:""}:{start:"",end:""};
+  }
+  function parsePerson(s){
+    const low=s.toLowerCase();
+    if(/\bmartina\b/.test(low))return "Martina";
+    if(/\bmar[ií]a\b/.test(low))return "María";
+    if(/\bsergio\b/.test(low))return "Sergio";
+    if(/\btrabajo\b/.test(low))return "Familia"; // valor interno compatible con Supabase
+    return "Sergio";
+  }
+  function parseLocation(s){
+    // Last "en X", but avoid "en septiembre/octubre..." and time/date contexts.
+    const matches=[...s.matchAll(/\ben\s+([^,.;]+?)(?=\s+(?:hoy|mañana|pasado mañana|el\s+(?:lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)|a\s+las|de\s+\d{1,2}(?::\d{2})?\s+a)|$)/gi)];
+    if(!matches.length)return "";
+    let loc=matches[matches.length-1][1].trim();
+    if(/^(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)\b/i.test(loc))return "";
+    return loc;
+  }
+  function weekly(s){return /\b(todos?|todas?)\s+los?\b|\bcada\s+(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)\b|\bse\s+repite\s+semanalmente\b/i.test(s)}
+  function titleFrom(s,person,loc){
+    let t=s;
+    t=t.replace(new RegExp("\\b"+person.replace("í","[ií]")+"\\b","i"),"");
+    t=t.replace(/\b(hoy|mañana|pasado mañana)\b/gi,"");
+    t=t.replace(/\b(el\s+)?(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)\b/gi,"");
+    t=t.replace(/\b(todos?|todas?)\s+los?\s+(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)\b/gi,"");
+    t=t.replace(/\bcada\s+(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)\b/gi,"");
+    t=t.replace(/\b\d{1,2}\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)(?:\s+de\s+\d{4})?/gi,"");
+    t=t.replace(/\b\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{2,4})?\b/g,"");
+    t=t.replace(/\bde\s+\d{1,2}(?::\d{2})?\s*(?:h|horas?)?\s+a\s+(?:las\s+)?\d{1,2}(?::\d{2})?/gi,"");
+    t=t.replace(/\ba\s+las?\s+\d{1,2}(?::\d{2})?/gi,"");
+    if(loc)t=t.replace(new RegExp("\\ben\\s+"+loc.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"i"),"");
+    t=normalize(t.replace(/^[,;:\-\s]+|[,;:\-\s]+$/g,""));
+    return t ? t.charAt(0).toUpperCase()+t.slice(1) : "Evento";
+  }
+  function fillForm(data){
+    // Open normal event modal first.
+    try{
+      if(typeof openModal==="function") openModal();
+      else if(typeof openEventModal==="function") openEventModal();
+      else if(typeof openEdit==="function") openEdit(null);
+      else {
+        const m=$q("#eventModal"); if(m)m.classList.add("show");
+      }
+    }catch(e){const m=$q("#eventModal"); if(m)m.classList.add("show");}
+    setTimeout(()=>{
+      const set=(sel,val)=>{const el=$q(sel);if(el&&val!==undefined)el.value=val};
+      set("#title",data.title); set("#person",data.person); set("#date",data.date);
+      set("#start",data.start); set("#end",data.end); set("#location",data.location);
+      const all=$q("#allDay"); if(all)all.checked=!data.start;
+      const weeklyBox=$q("#weeklyRepeat"); if(weeklyBox)weeklyBox.checked=data.weekly;
+      const notes=$q("#notes"); if(notes && !notes.value) notes.value="";
+    },30);
+  }
+  function interpret(){
+    const raw=normalize($q("#quickText")?.value);
+    if(!raw){alert("Escribe o dicta el evento.");return}
+    const person=parsePerson(raw), date=parseDate(raw), times=parseTimes(raw), loc=parseLocation(raw);
+    const data={person,date,start:times.start,end:times.end,location:loc,weekly:weekly(raw)};
+    data.title=titleFrom(raw,person,loc);
+    $q("#quickModal")?.classList.remove("show");
+    fillForm(data);
+  }
+  document.addEventListener("DOMContentLoaded",()=>{
+    const modal=$q("#quickModal"), input=$q("#quickText");
+    $q("#quickCreateBtn")?.addEventListener("click",()=>{modal?.classList.add("show");setTimeout(()=>input?.focus(),50)});
+    $q("#closeQuick")?.addEventListener("click",()=>modal?.classList.remove("show"));
+    $q("#interpretQuick")?.addEventListener("click",interpret);
+    $q("#voiceQuick")?.addEventListener("click",()=>{
+      const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+      if(!SR){
+        alert("El reconocimiento de voz directo no está disponible en este navegador. Puedes pulsar el micrófono del teclado del iPhone y dictar en la caja de texto.");
+        input?.focus(); return;
+      }
+      const r=new SR(); r.lang="es-ES"; r.interimResults=false; r.maxAlternatives=1;
+      const b=$q("#voiceQuick"); if(b)b.textContent="🎙️ Escuchando…";
+      r.onresult=e=>{if(input)input.value=e.results[0][0].transcript};
+      r.onerror=()=>alert("No se pudo reconocer la voz. Puedes usar el dictado del teclado.");
+      r.onend=()=>{if(b)b.textContent="🎙️ Dictar"};
+      r.start();
+    });
+  });
+})();
 </script>
 
 </body>
