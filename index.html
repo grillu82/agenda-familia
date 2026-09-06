@@ -8,7 +8,7 @@
 :root{
   --bg:#f6f9fc; --card:#fff; --ink:#10213a; --muted:#6c7a90; --line:#e6edf5;
   --sergio:#fff3bf; --sergio-ink:#8a6200; --maria:#dcecff; --maria-ink:#1d5fa7;
-  --martina:#ffe1ef; --martina-ink:#b83272; --trabajo:#e1f7e7; --trabajo-ink:#23864a; --familia:#eee5ff; --familia-ink:#6d4bb3;
+  --martina:#ffe1ef; --martina-ink:#b83272; --trabajo:#e1f7e7; --trabajo-ink:#23864a; --familia:#eee5ff; --familia-ink:#6d4bb3; --viajes:#ffe7cc; --viajes-ink:#a35400;
   --danger:#ffe3e5; --danger-ink:#b3202e; --warn:#fff3d6; --warn-ink:#996000;
   --shadow:0 10px 30px rgba(25, 45, 75, .08); --radius:22px;
 }
@@ -28,6 +28,7 @@ button{cursor:pointer}
 .person-pill[data-person="Martina"],.chip.martina{background:var(--martina);color:var(--martina-ink)}
 .person-pill[data-person="Trabajo"],.chip.trabajo{background:var(--trabajo);color:var(--trabajo-ink)}
 .person-pill[data-person="Familia"],.chip.familia{background:var(--familia);color:var(--familia-ink)}
+.person-pill[data-person="Viajes"],.chip.viajes{background:var(--viajes);color:var(--viajes-ink)}
 .toolbar{background:rgba(255,255,255,.82);backdrop-filter:blur(12px);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:24px;padding:10px;display:flex;gap:8px;align-items:center;position:sticky;top:8px;z-index:5}
 .toolbar button{border:0;border-radius:16px;background:#f0f5fa;padding:10px 12px;color:var(--ink);font-weight:750}
 .toolbar button.active{background:#1264a3;color:#fff}
@@ -767,6 +768,27 @@ body.calendar-mode #alerts{
 }
 </style>
 
+
+<style id="calendar-attention-and-travel">
+.day-agenda-count{
+  margin-top:4px;
+  font-size:12px;
+  font-weight:800;
+  color:#1264a3;
+}
+.day-agenda-attention{
+  animation:dayAgendaPulse 1.05s ease;
+}
+@keyframes dayAgendaPulse{
+  0%{box-shadow:0 0 0 0 rgba(18,100,163,.35),var(--shadow)}
+  45%{box-shadow:0 0 0 8px rgba(18,100,163,.12),var(--shadow)}
+  100%{box-shadow:0 0 0 0 rgba(18,100,163,0),var(--shadow)}
+}
+.person-pill[data-person="Viajes"]{
+  border-color:rgba(163,84,0,.18);
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -782,6 +804,7 @@ body.calendar-mode #alerts{
       <button class="person-pill" data-person="Martina">Martina</button>
       <button class="person-pill" data-person="Trabajo">💼 Trabajo</button>
       <button class="person-pill" data-person="Familia">👨‍👩‍👧 Familia</button>
+      <button class="person-pill viajes-filter" data-person="Viajes">🧳 Viajes</button>
     </div>
   </section>
 
@@ -815,8 +838,9 @@ body.calendar-mode #alerts{
     <section id="dayAgenda" class="day-agenda" aria-live="polite">
       <div class="day-agenda-head">
         <div>
-          <div class="day-agenda-kicker">EVENTOS DEL DÍA</div>
+          <div class="day-agenda-kicker" id="dayAgendaKicker">EVENTOS DEL DÍA</div>
           <h3 id="dayAgendaTitle">Selecciona un día</h3>
+          <div id="dayAgendaCount" class="day-agenda-count"></div>
         </div>
         <button type="button" id="dayAgendaAdd" class="day-add-btn" title="Añadir evento">＋</button>
       </div>
@@ -853,8 +877,7 @@ body.calendar-mode #alerts{
           <label>Categoría</label>
           <select id="category">
             <option>Trabajo</option><option>Familia</option><option>Salud</option><option>Tenis</option>
-            <option>Inglés</option><option>Deporte</option><option>Personal</option><option>Otro</option>
-          </select>
+            <option>Inglés</option><option>Deporte</option><option>Personal</option><option>Otro</option><option value="Viajes">🧳 Viajes</option></select>
         </div>
         <div class="field"><label>Fecha <span class="req">*</span></label><input id="date" type="date" required></div>
         <div class="field"><label>Todo el día</label><select id="allDay"><option value="false">No</option><option value="true">Sí</option></select></div>
@@ -1038,15 +1061,17 @@ function monthEvents(){
   const y=state.month.getFullYear(),m=state.month.getMonth();
   return state.events.filter(e=>{
     const d=new Date(e.date+"T12:00:00");
-    return d.getFullYear()===y&&d.getMonth()===m&&(state.filter==="Todos"||e.person===state.filter);
+    return d.getFullYear()===y&&d.getMonth()===m&&(state.filter==="Todos"||(state.filter==="Viajes"?e.category==="Viajes":e.person===state.filter));
   }).sort((a,b)=>a.date.localeCompare(b.date)||(a.allDay?-1:1)||(a.startTime||"").localeCompare(b.startTime||""));
 }
 
 function normalizeDisplayPersons(){
-  state.events=(state.events||[]).map(e=>{
-    if(e.person==="Familia" && e.category==="Trabajo") return {...e,person:"Trabajo"};
-    return e;
-  });
+  state.events=(state.events||[])
+    .filter(e=>!(e.person==="Martina" && /\b(ingl[eé]s|english)\b/i.test((e.title||"")+" "+(e.category||""))))
+    .map(e=>{
+      if(e.person==="Familia" && e.category==="Trabajo") return {...e,person:"Trabajo"};
+      return e;
+    });
 }
 
 function render(){
@@ -1256,15 +1281,21 @@ loadEvents();
   }
   function filteredEvents(){
     if(typeof state==="undefined") return [];
-    return (state.events||[]).filter(e=>state.filter==="Todos"||e.person===state.filter);
+    return (state.events||[]).filter(e=>{
+      if(state.filter==="Todos") return true;
+      if(state.filter==="Viajes") return e.category==="Viajes";
+      return e.person===state.filter;
+    });
   }
 
   function renderDayAgenda(iso){
     const wrap=document.getElementById("dayAgendaList");
     const title=document.getElementById("dayAgendaTitle");
+    const count=document.getElementById("dayAgendaCount");
     if(!wrap||!title)return;
     if(!iso){
       title.textContent="Selecciona un día";
+      if(count)count.textContent="";
       wrap.innerHTML='<div class="day-empty">Pulsa sobre un día del calendario para ver sus eventos.</div>';
       return;
     }
@@ -1273,6 +1304,7 @@ loadEvents();
       .filter(e=>e.date===iso)
       .sort((a,b)=>(a.startTime||"99:99").localeCompare(b.startTime||"99:99"));
 
+    if(count)count.textContent=list.length===1?"1 evento":list.length+" eventos";
     if(!list.length){
       wrap.innerHTML='<div class="day-empty">No hay eventos este día.</div>';
       return;
@@ -1285,7 +1317,7 @@ loadEvents();
       return `<button type="button" class="day-event" data-id="${e.id}">
         <span class="day-event-bar ${cls}"></span>
         <span class="day-event-main">
-          <span class="day-event-title">${e.title||"Evento"}</span>
+          <span class="day-event-title">${e.category==="Viajes"?"🧳 ":""}${e.title||"Evento"}</span>
           <span class="day-event-meta">${meta}</span>
         </span>
         <span class="day-event-person ${cls}">${displayPerson(e.person)}</span>
@@ -1300,6 +1332,15 @@ loadEvents();
     selectedDate=iso;
     document.querySelectorAll(".calendar-day").forEach(c=>c.classList.toggle("selected-day",c.dataset.date===iso));
     renderDayAgenda(iso);
+
+    const panel=document.getElementById("dayAgenda");
+    if(panel){
+      panel.classList.remove("day-agenda-attention");
+      void panel.offsetWidth;
+      panel.classList.add("day-agenda-attention");
+      setTimeout(()=>panel.classList.remove("day-agenda-attention"),1100);
+      setTimeout(()=>panel.scrollIntoView({behavior:"smooth",block:"start"}),80);
+    }
   }
 
   function renderCalendar(){
@@ -1339,8 +1380,8 @@ loadEvents();
         const b=document.createElement("button");
         b.type="button";
         b.className="cal-event "+pclass(e.person);
-        const t=e.allDay?"":(e.startTime?e.startTime.slice(0,5)+" ":"");
-        b.textContent=t+(e.title||"Evento");
+        const travelIcon=e.category==="Viajes"?"🧳 ":"";
+        b.textContent=travelIcon+(e.title||"Evento");
         b.title=displayPerson(e.person)+" · "+(e.title||"Evento");
         b.onclick=ev=>{
           ev.stopPropagation();
