@@ -802,9 +802,9 @@ body.calendar-mode #alerts{
       <button class="person-pill" data-person="Sergio">Sergio</button>
       <button class="person-pill" data-person="María">Maria</button>
       <button class="person-pill" data-person="Martina">Martina</button>
-      <button class="person-pill" data-person="Trabajo">💼 Trabajo</button>
+      <button class="person-pill" data-person="Trabajo">💻 Trabajo</button>
       <button class="person-pill" data-person="Familia">👨‍👩‍👧 Familia</button>
-      <button class="person-pill viajes-filter" data-person="Viajes">🧳 Viajes</button>
+      <button class="person-pill viajes-filter" data-person="Viajes">🧳 Vacaciones</button>
     </div>
   </section>
 
@@ -877,7 +877,7 @@ body.calendar-mode #alerts{
           <label>Categoría</label>
           <select id="category">
             <option>Trabajo</option><option>Familia</option><option>Salud</option><option>Tenis</option>
-            <option>Inglés</option><option>Deporte</option><option>Personal</option><option>Otro</option><option value="Viajes">🧳 Viajes</option></select>
+            <option>Inglés</option><option>Deporte</option><option>Personal</option><option>Otro</option><option value="Viajes">🧳 Vacaciones</option></select>
         </div>
         <div class="field"><label>Fecha <span class="req">*</span></label><input id="date" type="date" required></div>
         <div class="field"><label>Todo el día</label><select id="allDay"><option value="false">No</option><option value="true">Sí</option></select></div>
@@ -1313,7 +1313,7 @@ loadEvents();
       const cls=pclass(e.person);
       const time=e.allDay?"Todo el día":
         [e.startTime?.slice(0,5),e.endTime?.slice(0,5)].filter(Boolean).join("–") || "Sin hora";
-      const meta=[time,e.location].filter(Boolean).join(" · ");
+      const meta=[time,e.location,e.away?"✈️ Duerme fuera":""].filter(Boolean).join(" · ");
       return `<button type="button" class="day-event" data-id="${e.id}">
         <span class="day-event-bar ${cls}"></span>
         <span class="day-event-main">
@@ -1381,8 +1381,9 @@ loadEvents();
         b.type="button";
         b.className="cal-event "+pclass(e.person);
         const travelIcon=e.category==="Viajes"?"🧳 ":"";
-        b.textContent=travelIcon+(e.title||"Evento");
-        b.title=displayPerson(e.person)+" · "+(e.title||"Evento");
+        const awayIcon=e.away?" ✈️":"";
+        b.textContent=travelIcon+(e.title||"Evento")+awayIcon;
+        b.title=displayPerson(e.person)+" · "+(e.title||"Evento")+(e.away?" · ✈️ Duerme fuera":"");
         b.onclick=ev=>{
           ev.stopPropagation();
           selectDay(iso);
