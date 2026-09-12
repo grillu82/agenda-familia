@@ -770,6 +770,65 @@ body:not(.module-calendar) .fab{display:none!important}
 }
 </style>
 
+
+<style id="tasks-module-styles">
+.module-card-tasks .module-icon{background:#f5f3ff}
+.tasks-top{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin:4px 2px 14px}
+.tasks-top h2{font-size:28px;margin:4px 0 3px;letter-spacing:-.035em}
+.tasks-top p{margin:0;color:var(--app-muted);font-size:12px}
+.primary-app-btn,.secondary-app-btn,.danger-app-btn{border:0;border-radius:14px;padding:11px 14px;font-weight:850;font-size:12px}
+.primary-app-btn{background:var(--app-blue);color:#fff}.secondary-app-btn{background:#eef2f7;color:var(--app-ink)}.danger-app-btn{background:#fee2e2;color:#991b1b}
+.task-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.task-kpi{background:#fff;border:1px solid var(--app-line);border-radius:18px;padding:14px;box-shadow:var(--app-shadow)}
+.task-kpi span{display:block;color:var(--app-muted);font-size:9px;text-transform:uppercase;font-weight:900;letter-spacing:.05em}.task-kpi b{display:block;font-size:25px;margin-top:5px}
+.task-filters{display:flex;gap:9px;margin-bottom:14px}.task-filters select{flex:1;border:1px solid var(--app-line);border-radius:13px;background:#f8fafc;padding:10px 11px;color:var(--app-ink);font-weight:750;font-size:12px}
+.task-list{display:grid;gap:9px}.task-empty{padding:28px 12px;text-align:center;color:var(--app-muted);font-size:12px}
+.task-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:11px;align-items:start;border:1px solid var(--app-line);border-radius:17px;padding:13px;background:#fff}
+.task-item.overdue{border-color:#fecaca;background:#fffafa}.task-check{width:28px;height:28px;border:2px solid #cbd5e1;border-radius:9px;background:#fff;display:grid;place-items:center;font-size:15px;color:#fff;padding:0}
+.task-item.done .task-check{background:#16a34a;border-color:#16a34a}.task-item.done .task-title{text-decoration:line-through;color:#94a3b8}
+.task-body{min-width:0;cursor:pointer}.task-title-line{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.task-title{font-size:13px;font-weight:850}
+.task-status{font-size:8px;font-weight:900;text-transform:uppercase;padding:4px 6px;border-radius:999px;background:#f1f5f9;color:#475569}
+.task-status.progress{background:#dbeafe;color:#1d4ed8}.task-status.done{background:#dcfce7;color:#166534}.task-status.cancelled{background:#e2e8f0;color:#64748b}.task-status.overdue{background:#fee2e2;color:#991b1b}
+.task-desc{font-size:11px;color:var(--app-muted);margin:5px 0 0;white-space:pre-wrap}.task-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:7px;font-size:9px;color:#64748b;font-weight:750}
+.task-person,.task-date-chip{padding:4px 7px;border-radius:999px;border:1px solid var(--app-line)}.task-person{background:#f8fafc}.task-date-chip{background:#eff6ff;color:#1d4ed8}.task-date-chip.due{background:#fff7ed;color:#9a3412}
+.task-edit{border:0;background:#f8fafc;border-radius:10px;width:30px;height:30px;color:#64748b;font-size:16px}
+.task-modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:center;justify-content:center;z-index:10000;padding:16px}.task-modal-backdrop.show{display:flex}
+.task-modal-card{width:min(620px,100%);max-height:90dvh;overflow:auto;background:#fff;border-radius:22px;padding:18px;box-shadow:0 30px 70px rgba(15,23,42,.28)}
+.task-modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}.task-modal-head h2{margin:4px 0 0;font-size:22px}
+.task-close-btn{border:0;background:#f1f5f9;border-radius:12px;width:36px;height:36px;font-size:23px}
+.task-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.task-field{display:grid;gap:6px}.task-field.full{grid-column:1/-1}.task-field span{font-size:10px;font-weight:850;color:#475569}
+.task-field input,.task-field select,.task-field textarea{width:100%;border:1px solid var(--app-line);border-radius:13px;padding:11px;background:#fff;color:var(--app-ink);font:inherit}.task-field textarea{resize:vertical}
+.task-form-error{min-height:18px;color:#b91c1c;font-size:10px;font-weight:750;padding-top:5px}.task-form-actions{display:flex;align-items:center;gap:8px;margin-top:10px}.task-action-spacer{flex:1}
+.home-task-row{display:grid;grid-template-columns:8px 1fr auto;gap:10px;align-items:center;padding:10px;background:#f8fafc;border-radius:14px}.home-task-dot{width:7px;height:30px;border-radius:999px;background:#2563eb}.home-task-row.overdue .home-task-dot{background:#dc2626}
+.home-task-row b{display:block;font-size:12px}.home-task-row small{display:block;color:var(--app-muted);font-size:10px;margin-top:2px}.home-task-date{font-size:9px;font-weight:850;color:#64748b;text-align:right}
+@media(max-width:720px){.task-kpi-grid{grid-template-columns:1fr 1fr}.tasks-top{align-items:center}}
+@media(max-width:560px){.task-form-grid{grid-template-columns:1fr}.task-field.full{grid-column:auto}.task-filters{display:grid;grid-template-columns:1fr 1fr}.task-modal-backdrop{align-items:flex-end;padding:0}.task-modal-card{width:100%;max-width:none;border-radius:22px 22px 0 0;max-height:88dvh;padding-bottom:max(18px,env(safe-area-inset-bottom))}}
+</style>
+
+
+<style id="member-profile-styles">
+.member-pill{border:1px solid var(--app-line);background:#fff;border-radius:14px;min-height:42px;padding:7px 10px;display:flex;align-items:center;gap:6px;box-shadow:var(--app-shadow);color:var(--app-ink);font-size:11px;font-weight:850}
+.member-pill #activeMemberAvatar{width:25px;height:25px;border-radius:9px;display:grid;place-items:center;background:#eef2ff;font-size:12px}
+.member-modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.52);display:none;align-items:center;justify-content:center;z-index:11000;padding:16px}
+.member-modal-backdrop.show{display:flex}
+.member-modal-card{width:min(440px,100%);background:#fff;border-radius:24px;padding:19px;box-shadow:0 30px 70px rgba(15,23,42,.3)}
+.member-modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.member-modal-head h2{margin:4px 0 3px;font-size:24px;letter-spacing:-.03em}.member-modal-head p{margin:0;color:var(--app-muted);font-size:11px}
+.member-options{display:grid;gap:9px;margin-top:17px}
+.member-option{width:100%;border:1px solid var(--app-line);background:#fff;border-radius:17px;padding:11px;display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:11px;text-align:left;color:var(--app-ink)}
+.member-option>span:nth-child(2){display:grid;gap:2px}.member-option b{font-size:13px}.member-option small{font-size:10px;color:var(--app-muted)}
+.member-option>span:last-child{font-size:23px;color:#94a3b8}
+.member-avatar{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-weight:900;font-size:17px}
+.member-avatar.sergio{background:#fef3c7;color:#92400e}.member-avatar.maria{background:#dbeafe;color:#1d4ed8}.member-avatar.martina{background:#fce7f3;color:#be185d}
+.member-note{font-size:9px;color:#94a3b8;text-align:center;margin:14px 8px 0}
+@media(max-width:560px){
+  .member-pill #activeMemberName{display:none}
+  .member-pill{padding:7px 8px}
+  .member-modal-backdrop{align-items:flex-end;padding:0}
+  .member-modal-card{width:100%;border-radius:24px 24px 0 0;padding-bottom:max(20px,env(safe-area-inset-bottom))}
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -780,6 +839,7 @@ body:not(.module-calendar) .fab{display:none!important}
       <p id="moduleMainSubtitle">Todo lo importante de casa en un solo sitio.</p>
     </div>
     <div class="family-app-actions">
+      <button id="activeMemberBtn" class="member-pill" type="button" aria-label="Cambiar miembro"><span id="activeMemberAvatar">👤</span><span id="activeMemberName">Identificarme</span><span>⌄</span></button>
       <button id="installAppBtnGlobal" class="header-icon-btn" type="button" aria-label="Instalar app" title="Instalar app">📲</button>
       <button id="settingsBtnGlobal" class="header-icon-btn" type="button" aria-label="Ajustes" title="Ajustes">⚙️</button>
     </div>
@@ -811,9 +871,9 @@ body:not(.module-calendar) .fab{display:none!important}
         <span class="module-copy"><b>Documentos</b><small>Próximamente</small></span>
         <span class="module-arrow">›</span>
       </button>
-      <button class="module-card disabled-card" type="button" disabled>
+      <button class="module-card module-card-tasks" data-open-module="tasks" type="button">
         <span class="module-icon">✅</span>
-        <span class="module-copy"><b>Tareas</b><small>Próximamente</small></span>
+        <span class="module-copy"><b>Tareas</b><small id="homeTasksSummary">Cargando tareas…</small></span>
         <span class="module-arrow">›</span>
       </button>
     </div>
@@ -836,6 +896,13 @@ body:not(.module-calendar) .fab{display:none!important}
         <div><span>Coste previsto</span><b id="homeFixed">—</b></div>
         <div><span>Libre</span><b id="homeFree">—</b></div>
       </div>
+    </div>
+    <div class="dashboard-card">
+      <div class="dashboard-card-head">
+        <div><span class="eyebrow">TAREAS</span><h3>Pendientes de la familia</h3></div>
+        <button class="link-btn" data-open-module="tasks" type="button">Ver tareas</button>
+      </div>
+      <div id="homeTaskList" class="home-upcoming"></div>
     </div>
   </section>
 
@@ -903,6 +970,46 @@ body:not(.module-calendar) .fab{display:none!important}
     </div>
   </section>
 
+
+  <section id="tasksModule" class="module">
+    <div class="tasks-top">
+      <div>
+        <span class="eyebrow">ORGANIZACIÓN FAMILIAR</span>
+        <h2>Tareas</h2>
+        <p>Asigna tareas, fija cuándo hay que hacerlas y controla su estado.</p>
+      </div>
+      <button id="newTaskBtn" class="primary-app-btn" type="button">＋ Nueva tarea</button>
+    </div>
+
+    <div class="task-kpi-grid">
+      <article class="task-kpi"><span>Pendientes</span><b id="taskPendingCount">0</b></article>
+      <article class="task-kpi"><span>En curso</span><b id="taskProgressCount">0</b></article>
+      <article class="task-kpi"><span>Vencidas</span><b id="taskOverdueCount">0</b></article>
+      <article class="task-kpi"><span>Hechas</span><b id="taskDoneCount">0</b></article>
+    </div>
+
+    <div class="dashboard-card">
+      <div class="task-filters">
+        <select id="taskAssigneeFilter">
+          <option value="Mias">Mis tareas</option>
+          <option value="Todos">Todos</option>
+          <option value="Sergio">Sergio</option>
+          <option value="María">María</option>
+          <option value="Martina">Martina</option>
+        </select>
+        <select id="taskStatusFilter">
+          <option value="Activas">Activas</option>
+          <option value="Todos">Todos los estados</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="En curso">En curso</option>
+          <option value="Hecha">Hecha</option>
+          <option value="Cancelada">Cancelada</option>
+        </select>
+      </div>
+      <div id="taskList" class="task-list"></div>
+    </div>
+  </section>
+
   <section id="calendarModule" class="module">
   <section class="hero">
     <button id="installAppBtn" class="top-install" type="button" aria-label="Instalar app" title="Instalar app">📲</button>
@@ -956,11 +1063,55 @@ body:not(.module-calendar) .fab{display:none!important}
   <button class="bottom-nav-btn active" data-module="home" type="button"><span>⌂</span><small>Inicio</small></button>
   <button class="bottom-nav-btn" data-module="calendar" type="button"><span>🗓</span><small>Calendario</small></button>
   <button class="bottom-nav-btn" data-module="finance" type="button"><span>€</span><small>Finanzas</small></button>
-  <button class="bottom-nav-btn" data-module="more" type="button"><span>•••</span><small>Más</small></button>
+  <button class="bottom-nav-btn" data-module="tasks" type="button"><span>✓</span><small>Tareas</small></button>
 </nav>
 
 <button id="addBtn" class="fab" aria-label="Añadir evento">+</button>
 
+
+
+
+<div id="memberModal" class="member-modal-backdrop" aria-hidden="true">
+  <div class="member-modal-card">
+    <div class="member-modal-head">
+      <div><span class="eyebrow">FAMILIA MSM</span><h2>¿Quién eres?</h2><p>La app recordará este perfil en este dispositivo.</p></div>
+      <button id="closeMemberModal" class="task-close-btn" type="button">×</button>
+    </div>
+    <div class="member-options">
+      <button class="member-option" type="button" data-member="Sergio"><span class="member-avatar sergio">S</span><span><b>Sergio</b><small>Usar este perfil</small></span><span>›</span></button>
+      <button class="member-option" type="button" data-member="María"><span class="member-avatar maria">M</span><span><b>María</b><small>Usar este perfil</small></span><span>›</span></button>
+      <button class="member-option" type="button" data-member="Martina"><span class="member-avatar martina">M</span><span><b>Martina</b><small>Usar este perfil</small></span><span>›</span></button>
+    </div>
+    <p class="member-note">Esto identifica quién está usando la app; todavía no es un inicio de sesión con contraseña.</p>
+  </div>
+</div>
+
+<div id="taskModal" class="task-modal-backdrop" aria-hidden="true">
+  <div class="task-modal-card">
+    <div class="task-modal-head">
+      <div><span class="eyebrow">TAREA FAMILIAR</span><h2 id="taskModalTitle">Nueva tarea</h2></div>
+      <button id="closeTaskModal" class="task-close-btn" type="button">×</button>
+    </div>
+    <form id="taskForm">
+      <input type="hidden" id="taskId">
+      <div class="task-form-grid">
+        <label class="task-field full"><span>Tarea *</span><input id="taskTitle" required maxlength="140" placeholder="Ej. Llevar el coche al taller"></label>
+        <label class="task-field full"><span>Descripción</span><textarea id="taskDescription" rows="3" placeholder="Detalles, instrucciones…"></textarea></label>
+        <label class="task-field"><span>Asignada a *</span><select id="taskAssignee" required><option>Sergio</option><option>María</option><option>Martina</option></select></label>
+        <label class="task-field"><span>Estado</span><select id="taskStatus"><option>Pendiente</option><option>En curso</option><option>Hecha</option><option>Cancelada</option></select></label>
+        <label class="task-field"><span>Fecha para hacerla</span><input id="taskDate" type="date"></label>
+        <label class="task-field"><span>Fecha límite</span><input id="taskDueDate" type="date"></label>
+      </div>
+      <div id="taskFormError" class="task-form-error"></div>
+      <div class="task-form-actions">
+        <button id="deleteTaskBtn" class="danger-app-btn hidden" type="button">Eliminar</button>
+        <span class="task-action-spacer"></span>
+        <button id="cancelTaskBtn" class="secondary-app-btn" type="button">Cancelar</button>
+        <button class="primary-app-btn" type="submit">Guardar tarea</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <div id="eventModal" class="modal-backdrop">
   <div class="modal">
@@ -1726,21 +1877,46 @@ document.addEventListener("DOMContentLoaded",()=>{
     home:["Inicio","Todo lo importante de casa en un solo sitio."],
     calendar:["Calendario","Agenda compartida, eventos y solapamientos."],
     finance:["Finanzas","Ingresos, gastos estructurales y capacidad libre."],
-    more:["Más","Nuevos módulos familiares irán apareciendo aquí."]
+    tasks:["Tareas","Responsabilidades familiares, fechas y seguimiento."]
   };
   const financeState={incomeSources:[],expenses:[],reviews:[],budgets:[],loaded:false};
+  const MEMBER_KEY="familia_msm_active_member";
+  let activeMember=localStorage.getItem(MEMBER_KEY)||"";
+
+  function memberInitial(name){ return name ? name.charAt(0).toUpperCase() : "👤"; }
+  function updateMemberUI(){
+    const n=document.getElementById("activeMemberName"),a=document.getElementById("activeMemberAvatar");
+    if(n)n.textContent=activeMember||"Identificarme";
+    if(a)a.textContent=activeMember?memberInitial(activeMember):"👤";
+    const filter=document.getElementById("taskAssigneeFilter");
+    if(filter && activeMember && !filter.dataset.userTouched) filter.value="Mias";
+  }
+  function openMemberModal(required=false){
+    const m=document.getElementById("memberModal"); if(!m)return;
+    m.dataset.required=required?"1":"0";m.classList.add("show");m.setAttribute("aria-hidden","false");
+    const close=document.getElementById("closeMemberModal");if(close)close.style.display=required?"none":"";
+  }
+  function closeMemberModal(){
+    const m=document.getElementById("memberModal");if(!m||m.dataset.required==="1")return;
+    m.classList.remove("show");m.setAttribute("aria-hidden","true");
+  }
+  function selectMember(name){
+    activeMember=name;localStorage.setItem(MEMBER_KEY,name);
+    const m=document.getElementById("memberModal");if(m){m.dataset.required="0";m.classList.remove("show");m.setAttribute("aria-hidden","true");}
+    updateMemberUI();
+    const assignee=document.getElementById("taskAssignee");if(assignee)assignee.value=name;
+    renderTasks();renderHomeTasks();
+  }
+
 
   const eur=n=>new Intl.NumberFormat("es-ES",{style:"currency",currency:"EUR",minimumFractionDigits:2,maximumFractionDigits:2,useGrouping:true}).format(Number(n||0));
   const pct=n=>new Intl.NumberFormat("es-ES",{style:"percent",maximumFractionDigits:1}).format(Number(n||0));
   const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
 
   function setModule(name){
-    if(name==="more"){
-      alert("Iremos añadiendo aquí nuevos módulos: documentos, tareas, viajes, salud, mantenimiento…");
-      return;
-    }
     document.querySelectorAll(".module").forEach(x=>x.classList.remove("active"));
-    const target=document.getElementById(name==="home"?"homeModule":name==="calendar"?"calendarModule":"financeModule");
+    const ids={home:"homeModule",calendar:"calendarModule",finance:"financeModule",tasks:"tasksModule"};
+    const target=document.getElementById(ids[name]||"homeModule");
     if(target) target.classList.add("active");
     document.querySelectorAll(".bottom-nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.module===name));
     document.body.classList.toggle("module-calendar",name==="calendar");
@@ -1748,6 +1924,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     const mt=document.getElementById("moduleMainTitle"), ms=document.getElementById("moduleMainSubtitle");
     if(mt) mt.textContent=t;if(ms) ms.textContent=s;
     if(name==="finance"&&!financeState.loaded) loadFinance();
+    if(name==="tasks"&&!taskState.loaded) loadTasks();
     if(name==="home") renderHome();
     window.scrollTo({top:0,behavior:"smooth"});
   }
@@ -1767,6 +1944,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     if(dateEl) dateEl.textContent=new Intl.DateTimeFormat("es-ES",{weekday:"long",day:"numeric",month:"long"}).format(d);
     renderHomeEvents();
     renderHomeFinance();
+    renderHomeTasks();
   }
 
   function renderHomeEvents(){
@@ -1898,6 +2076,147 @@ document.addEventListener("DOMContentLoaded",()=>{
     if(a)a.textContent=eur(t.income);if(b)b.textContent=eur(t.costOfLiving);if(c)c.textContent=eur(t.free);
     if(s)s.textContent=`${eur(t.free)} libres al mes · ${pct(t.ratio)} comprometido`;
   }
+
+
+  const taskState={items:[],loaded:false};
+
+  function taskDateLabel(iso){
+    if(!iso) return "";
+    return new Intl.DateTimeFormat("es-ES",{day:"2-digit",month:"short"}).format(new Date(iso+"T12:00:00")).replace(".","");
+  }
+  function isTaskOverdue(t){
+    if(["Hecha","Cancelada"].includes(t.status)) return false;
+    const d=t.due_date||t.task_date;if(!d)return false;
+    const today=new Date();today.setHours(0,0,0,0);
+    return new Date(d+"T12:00:00")<today;
+  }
+  function sortTasks(a){
+    return a.slice().sort((x,y)=>(x.due_date||x.task_date||"9999").localeCompare(y.due_date||y.task_date||"9999"));
+  }
+  async function loadTasks(){
+    try{
+      taskState.items=await api("family_tasks?select=*&order=due_date.asc.nullslast,task_date.asc.nullslast,created_at.desc")||[];
+    }catch(err){
+      console.warn(err);
+      taskState.items=JSON.parse(localStorage.getItem("family_tasks_fallback")||"[]");
+    }
+    taskState.loaded=true;renderTasks();renderHomeTasks();
+  }
+  function renderTasks(){
+    if(!taskState.loaded)return;
+    const all=taskState.items;
+    document.getElementById("taskPendingCount").textContent=all.filter(x=>x.status==="Pendiente").length;
+    document.getElementById("taskProgressCount").textContent=all.filter(x=>x.status==="En curso").length;
+    document.getElementById("taskDoneCount").textContent=all.filter(x=>x.status==="Hecha").length;
+    document.getElementById("taskOverdueCount").textContent=all.filter(isTaskOverdue).length;
+
+    const assignee=document.getElementById("taskAssigneeFilter")?.value||"Todos";
+    const status=document.getElementById("taskStatusFilter")?.value||"Activas";
+    let rows=all.filter(x=>assignee==="Todos"||(assignee==="Mias"&&activeMember&&x.assignee===activeMember)||x.assignee===assignee);
+    rows=status==="Activas"?rows.filter(x=>!["Hecha","Cancelada"].includes(x.status)):status==="Todos"?rows:rows.filter(x=>x.status===status);
+    rows=sortTasks(rows);
+
+    const host=document.getElementById("taskList");
+    if(!rows.length){host.innerHTML='<div class="task-empty">No hay tareas con estos filtros.</div>';return;}
+    host.innerHTML=rows.map(t=>{
+      const overdue=isTaskOverdue(t), done=t.status==="Hecha";
+      const cls=overdue?"overdue":t.status==="En curso"?"progress":done?"done":t.status==="Cancelada"?"cancelled":"";
+      const statusText=overdue?"Vencida":t.status;
+      return `<article class="task-item ${overdue?"overdue":""} ${done?"done":""}">
+        <button class="task-check" type="button" data-task-toggle="${esc(t.id)}">${done?"✓":""}</button>
+        <div class="task-body" data-task-edit="${esc(t.id)}">
+          <div class="task-title-line"><span class="task-title">${esc(t.title)}</span><span class="task-status ${cls}">${esc(statusText)}</span></div>
+          ${t.description?`<p class="task-desc">${esc(t.description)}</p>`:""}
+          <div class="task-meta"><span class="task-person">👤 ${esc(t.assignee)}</span>
+          ${t.task_date?`<span class="task-date-chip">📅 ${taskDateLabel(t.task_date)}</span>`:""}
+          ${t.due_date?`<span class="task-date-chip due">⏳ límite ${taskDateLabel(t.due_date)}</span>`:""}</div>
+        </div>
+        <button class="task-edit" type="button" data-task-edit="${esc(t.id)}">✎</button>
+      </article>`;
+    }).join("");
+  }
+  function renderHomeTasks(){
+    const sum=document.getElementById("homeTasksSummary"),host=document.getElementById("homeTaskList");
+    if(!taskState.loaded){if(sum)sum.textContent="Cargando tareas…";loadTasks();return;}
+    const allActive=sortTasks(taskState.items.filter(x=>!["Hecha","Cancelada"].includes(x.status)));
+    const active=activeMember?allActive.filter(x=>x.assignee===activeMember):allActive;
+    const overdue=active.filter(isTaskOverdue).length;
+    if(sum)sum.textContent=activeMember?(overdue?`${activeMember}: ${active.length} activas · ${overdue} vencida${overdue===1?"":"s"}`:`${activeMember}: ${active.length} tarea${active.length===1?"":"s"} activa${active.length===1?"":"s"}`):(overdue?`${active.length} activas · ${overdue} vencidas`:`${active.length} tareas activas`);
+    if(!host)return;
+    if(!active.length){host.innerHTML='<div class="muted-copy">No hay tareas pendientes.</div>';return;}
+    host.innerHTML=active.slice(0,4).map(t=>{
+      const over=isTaskOverdue(t),d=t.due_date||t.task_date;
+      return `<div class="home-task-row ${over?"overdue":""}"><span class="home-task-dot"></span><div><b>${esc(t.title)}</b><small>${esc(t.assignee)} · ${over?"Vencida":esc(t.status)}</small></div><span class="home-task-date">${d?taskDateLabel(d):""}</span></div>`;
+    }).join("");
+  }
+  function openTaskModal(t=null){
+    document.getElementById("taskId").value=t?.id||"";
+    document.getElementById("taskTitle").value=t?.title||"";
+    document.getElementById("taskDescription").value=t?.description||"";
+    document.getElementById("taskAssignee").value=t?.assignee||activeMember||"Sergio";
+    document.getElementById("taskStatus").value=t?.status||"Pendiente";
+    document.getElementById("taskDate").value=t?.task_date||"";
+    document.getElementById("taskDueDate").value=t?.due_date||"";
+    document.getElementById("taskFormError").textContent="";
+    document.getElementById("taskModalTitle").textContent=t?"Editar tarea":"Nueva tarea";
+    document.getElementById("deleteTaskBtn").classList.toggle("hidden",!t);
+    document.getElementById("taskModal").classList.add("show");
+  }
+  function closeTaskModal(){document.getElementById("taskModal").classList.remove("show")}
+  async function saveTask(e){
+    e.preventDefault();
+    const id=document.getElementById("taskId").value;
+    const task_date=document.getElementById("taskDate").value||null,due_date=document.getElementById("taskDueDate").value||null;
+    if(!task_date&&!due_date){document.getElementById("taskFormError").textContent="Indica una fecha para hacerla o una fecha límite.";return;}
+    if(task_date&&due_date&&due_date<task_date){document.getElementById("taskFormError").textContent="La fecha límite no puede ser anterior a la fecha prevista.";return;}
+    const payload={title:document.getElementById("taskTitle").value.trim(),description:document.getElementById("taskDescription").value.trim()||null,assignee:document.getElementById("taskAssignee").value,task_date,due_date,status:document.getElementById("taskStatus").value};
+    try{
+      const data=await api(id?`family_tasks?id=eq.${encodeURIComponent(id)}`:"family_tasks",{method:id?"PATCH":"POST",body:JSON.stringify(payload)});
+      const saved=data?.[0]||{...payload,id:id||crypto.randomUUID()};
+      if(id){const i=taskState.items.findIndex(x=>x.id===id);if(i>=0)taskState.items[i]={...taskState.items[i],...saved};}
+      else taskState.items.push(saved);
+    }catch(err){
+      const saved={...payload,id:id||crypto.randomUUID(),created_at:new Date().toISOString()};
+      if(id){const i=taskState.items.findIndex(x=>x.id===id);if(i>=0)taskState.items[i]=saved;}else taskState.items.push(saved);
+      localStorage.setItem("family_tasks_fallback",JSON.stringify(taskState.items));
+    }
+    closeTaskModal();renderTasks();renderHomeTasks();
+  }
+  async function toggleTask(id){
+    const t=taskState.items.find(x=>x.id===id);if(!t)return;
+    const status=t.status==="Hecha"?"Pendiente":"Hecha";
+    try{const d=await api(`family_tasks?id=eq.${encodeURIComponent(id)}`,{method:"PATCH",body:JSON.stringify({status})});Object.assign(t,d?.[0]||{status});}
+    catch(e){t.status=status;localStorage.setItem("family_tasks_fallback",JSON.stringify(taskState.items));}
+    renderTasks();renderHomeTasks();
+  }
+  async function deleteTask(){
+    const id=document.getElementById("taskId").value;if(!id||!confirm("¿Eliminar esta tarea?"))return;
+    try{await api(`family_tasks?id=eq.${encodeURIComponent(id)}`,{method:"DELETE"});}catch(e){}
+    taskState.items=taskState.items.filter(x=>x.id!==id);localStorage.setItem("family_tasks_fallback",JSON.stringify(taskState.items));
+    closeTaskModal();renderTasks();renderHomeTasks();
+  }
+
+  document.getElementById("newTaskBtn")?.addEventListener("click",()=>openTaskModal());
+  document.getElementById("taskForm")?.addEventListener("submit",saveTask);
+  document.getElementById("closeTaskModal")?.addEventListener("click",closeTaskModal);
+  document.getElementById("cancelTaskBtn")?.addEventListener("click",closeTaskModal);
+  document.getElementById("deleteTaskBtn")?.addEventListener("click",deleteTask);
+  document.getElementById("taskAssigneeFilter")?.addEventListener("change",e=>{e.target.dataset.userTouched="1";renderTasks()});
+  document.getElementById("taskStatusFilter")?.addEventListener("change",renderTasks);
+  document.getElementById("taskList")?.addEventListener("click",e=>{
+    const toggle=e.target.closest("[data-task-toggle]");if(toggle){toggleTask(toggle.dataset.taskToggle);return;}
+    const edit=e.target.closest("[data-task-edit]");if(edit){const t=taskState.items.find(x=>x.id===edit.dataset.taskEdit);if(t)openTaskModal(t);}
+  });
+  document.getElementById("taskModal")?.addEventListener("click",e=>{if(e.target.id==="taskModal")closeTaskModal()});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("taskModal")?.classList.contains("show"))closeTaskModal()});
+
+
+  document.getElementById("activeMemberBtn")?.addEventListener("click",()=>openMemberModal(false));
+  document.getElementById("closeMemberModal")?.addEventListener("click",closeMemberModal);
+  document.getElementById("memberModal")?.addEventListener("click",e=>{if(e.target.id==="memberModal")closeMemberModal()});
+  document.querySelectorAll("[data-member]").forEach(b=>b.addEventListener("click",()=>selectMember(b.dataset.member)));
+  updateMemberUI();
+  setTimeout(()=>{if(!activeMember)openMemberModal(true)},120);
 
   const fixedCard=document.getElementById("finFixedCard"), detail=document.getElementById("financeExpenseDetail");
   function toggleDetail(show=true){
