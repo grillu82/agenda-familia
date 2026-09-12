@@ -829,6 +829,41 @@ body:not(.module-calendar) .fab{display:none!important}
 }
 </style>
 
+
+<style id="documents-module-styles">
+.module-card-documents .module-icon{background:#eff6ff}
+.documents-top{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin:4px 2px 14px}
+.documents-top h2{font-size:28px;margin:4px 0 3px;letter-spacing:-.035em}
+.documents-top p{margin:0;color:var(--app-muted);font-size:12px}
+.document-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.document-toolbar{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:9px;margin-bottom:14px}
+.document-toolbar input,.document-toolbar select{border:1px solid var(--app-line);border-radius:13px;background:#f8fafc;padding:10px 11px;color:var(--app-ink);font:inherit;font-size:12px}
+.document-list{display:grid;gap:9px}
+.document-row{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:11px;align-items:center;border:1px solid var(--app-line);border-radius:17px;padding:11px;background:#fff}
+.document-icon{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:#f1f5f9;font-size:22px;overflow:hidden}
+.document-thumb{width:100%;height:100%;object-fit:cover}
+.document-main{min-width:0}.document-main b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.document-main small{display:block;color:var(--app-muted);font-size:9px;margin-top:3px}
+.document-links{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.document-link-chip{font-size:8px;font-weight:800;padding:4px 6px;border-radius:999px;background:#eef2ff;color:#4338ca}
+.document-actions{display:flex;gap:5px}.document-action-btn{border:0;background:#f8fafc;color:#475569;border-radius:10px;min-width:34px;height:34px;padding:0 9px;font-weight:800}
+.document-empty{padding:30px;text-align:center;color:var(--app-muted);font-size:12px}
+.attachment-field small{display:block;color:var(--app-muted);font-size:9px;margin-top:4px}
+.entity-attachments{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.entity-attachment{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--app-line);border-radius:999px;padding:5px 8px;background:#f8fafc;font-size:9px;font-weight:750;color:#475569}
+.entity-attachment button{border:0;background:transparent;padding:0;color:#2563eb;font-weight:850}
+.compact-attach-card{max-width:500px}
+.expense-row-actions{display:flex;align-items:center;gap:7px}
+.expense-attach-btn{border:0;background:#eff6ff;color:#1d4ed8;border-radius:10px;width:32px;height:32px;font-size:15px}
+@media(max-width:720px){.document-kpi-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){
+ .documents-top{align-items:center}
+ .document-toolbar{grid-template-columns:1fr}
+ .document-row{grid-template-columns:42px minmax(0,1fr) auto}
+ .document-icon{width:42px;height:42px}
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -866,14 +901,14 @@ body:not(.module-calendar) .fab{display:none!important}
         <span class="module-copy"><b>Finanzas</b><small id="homeFinanceSummary">Cargando situación económica…</small></span>
         <span class="module-arrow">›</span>
       </button>
-      <button class="module-card disabled-card" type="button" disabled>
-        <span class="module-icon">📁</span>
-        <span class="module-copy"><b>Documentos</b><small>Próximamente</small></span>
-        <span class="module-arrow">›</span>
-      </button>
       <button class="module-card module-card-tasks" data-open-module="tasks" type="button">
         <span class="module-icon">✅</span>
         <span class="module-copy"><b>Tareas</b><small id="homeTasksSummary">Cargando tareas…</small></span>
+        <span class="module-arrow">›</span>
+      </button>
+      <button class="module-card module-card-documents" data-open-module="documents" type="button">
+        <span class="module-icon">📁</span>
+        <span class="module-copy"><b>Documentos</b><small id="homeDocumentsSummary">Archivos, fotos y adjuntos</small></span>
         <span class="module-arrow">›</span>
       </button>
     </div>
@@ -1010,6 +1045,39 @@ body:not(.module-calendar) .fab{display:none!important}
     </div>
   </section>
 
+
+  <section id="documentsModule" class="module">
+    <div class="documents-top">
+      <div>
+        <span class="eyebrow">ARCHIVO FAMILIAR</span>
+        <h2>Documentos</h2>
+        <p>Guarda documentos y fotos, estén o no asociados a otra parte de la app.</p>
+      </div>
+      <button id="newDocumentBtn" class="primary-app-btn" type="button">＋ Subir archivo</button>
+    </div>
+
+    <div class="document-kpi-grid">
+      <article class="task-kpi"><span>Total</span><b id="docTotalCount">0</b></article>
+      <article class="task-kpi"><span>Sin asociar</span><b id="docLooseCount">0</b></article>
+      <article class="task-kpi"><span>Fotos</span><b id="docImageCount">0</b></article>
+      <article class="task-kpi"><span>Otros archivos</span><b id="docFileCount">0</b></article>
+    </div>
+
+    <div class="dashboard-card">
+      <div class="document-toolbar">
+        <input id="documentSearch" type="search" placeholder="Buscar documento…">
+        <select id="documentFilter">
+          <option value="all">Todos</option>
+          <option value="unlinked">Sin asociar</option>
+          <option value="task">Tareas</option>
+          <option value="event">Eventos</option>
+          <option value="expense">Gastos</option>
+        </select>
+      </div>
+      <div id="documentList" class="document-list"></div>
+    </div>
+  </section>
+
   <section id="calendarModule" class="module">
   <section class="hero">
     <button id="installAppBtn" class="top-install" type="button" aria-label="Instalar app" title="Instalar app">📲</button>
@@ -1071,6 +1139,68 @@ body:not(.module-calendar) .fab{display:none!important}
 
 
 
+
+<div id="documentUploadModal" class="task-modal-backdrop" aria-hidden="true">
+  <div class="task-modal-card">
+    <div class="task-modal-head">
+      <div><span class="eyebrow">DOCUMENTOS</span><h2>Subir archivo o foto</h2></div>
+      <button id="closeDocumentUpload" class="task-close-btn" type="button">×</button>
+    </div>
+    <form id="documentUploadForm">
+      <div class="task-form-grid">
+        <label class="task-field full">
+          <span>Archivo(s) *</span>
+          <input id="documentFiles" required type="file" multiple accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt">
+          <small>Máximo 25 MB por archivo.</small>
+        </label>
+        <label class="task-field full"><span>Notas</span><textarea id="documentNotes" rows="2" placeholder="Opcional"></textarea></label>
+        <label class="task-field">
+          <span>Asociar a</span>
+          <select id="documentLinkType">
+            <option value="">Nada · documento independiente</option>
+            <option value="task">Tarea</option>
+            <option value="event">Evento</option>
+            <option value="expense">Gasto</option>
+          </select>
+        </label>
+        <label id="documentEntityField" class="task-field hidden">
+          <span>Elemento</span>
+          <select id="documentEntityId"></select>
+        </label>
+      </div>
+      <div id="documentUploadError" class="task-form-error"></div>
+      <div class="task-form-actions">
+        <span class="task-action-spacer"></span>
+        <button id="cancelDocumentUpload" class="secondary-app-btn" type="button">Cancelar</button>
+        <button class="primary-app-btn" type="submit">Subir</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="entityAttachModal" class="task-modal-backdrop" aria-hidden="true">
+  <div class="task-modal-card compact-attach-card">
+    <div class="task-modal-head">
+      <div><span class="eyebrow">ADJUNTAR</span><h2 id="entityAttachTitle">Añadir archivo</h2></div>
+      <button id="closeEntityAttach" class="task-close-btn" type="button">×</button>
+    </div>
+    <form id="entityAttachForm">
+      <input id="attachEntityType" type="hidden">
+      <input id="attachEntityId" type="hidden">
+      <label class="task-field full">
+        <span>Archivo(s) *</span>
+        <input id="entityAttachFiles" required type="file" multiple accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt">
+      </label>
+      <div id="entityAttachError" class="task-form-error"></div>
+      <div class="task-form-actions">
+        <span class="task-action-spacer"></span>
+        <button id="cancelEntityAttach" class="secondary-app-btn" type="button">Cancelar</button>
+        <button class="primary-app-btn" type="submit">Adjuntar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div id="memberModal" class="member-modal-backdrop" aria-hidden="true">
   <div class="member-modal-card">
     <div class="member-modal-head">
@@ -1097,6 +1227,12 @@ body:not(.module-calendar) .fab{display:none!important}
       <div class="task-form-grid">
         <label class="task-field full"><span>Tarea *</span><input id="taskTitle" required maxlength="140" placeholder="Ej. Llevar el coche al taller"></label>
         <label class="task-field full"><span>Descripción</span><textarea id="taskDescription" rows="3" placeholder="Detalles, instrucciones…"></textarea></label>
+        <label class="task-field full attachment-field">
+          <span>Adjuntos</span>
+          <input id="taskFiles" type="file" multiple accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt">
+          <small>Puedes añadir fotos o archivos. Si es una tarea nueva, se subirán al guardarla.</small>
+          <div id="taskAttachedDocs" class="entity-attachments"></div>
+        </label>
         <label class="task-field"><span>Asignada a *</span><select id="taskAssignee" required><option>Sergio</option><option>María</option><option>Martina</option></select></label>
         <label class="task-field"><span>Estado</span><select id="taskStatus"><option>Pendiente</option><option>En curso</option><option>Hecha</option><option>Cancelada</option></select></label>
         <label class="task-field"><span>Fecha para hacerla</span><input id="taskDate" type="date"></label>
@@ -1154,6 +1290,11 @@ body:not(.module-calendar) .fab{display:none!important}
         </div>
 
         <div class="field full"><label>Notas</label><textarea id="notes"></textarea></div>
+        <div class="field full attachment-field">
+          <label>Adjuntos</label>
+          <input id="eventFiles" type="file" multiple accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt">
+          <div id="eventAttachedDocs" class="entity-attachments"></div>
+        </div>
       </div>
       <div class="row">
         <button class="primary" type="submit">Guardar</button>
@@ -1430,6 +1571,8 @@ function openEvent(id=null){
   $("#away").value=String(!!e?.away); $("#conditional").value=String(!!e?.conditional); $("#notes").value=cleanEventNotes(e?.notes||"");
   $("#weeklyRepeat").checked=!!(e&&isWeeklyEvent(e));
   $("#deleteEvent").style.display=e?"inline-block":"none";
+  const ef=document.getElementById("eventFiles");if(ef)ef.value="";
+  renderEntityAttachments("event",e?.id||"",document.getElementById("eventAttachedDocs"));
   $("#eventModal").classList.add("show");
 }
 $("#addBtn").onclick=()=>openEvent();
@@ -1473,6 +1616,11 @@ $("#eventForm").onsubmit=async ev=>{
     } else {
       if(ix>=0)state.events[ix]=obj;else state.events.push(obj);
       saveLocal();
+    }
+    const eventFiles=[...(document.getElementById("eventFiles")?.files||[])];
+    if(eventFiles.length){
+      if(state.remote) await uploadFilesAndLink(eventFiles,"event",id,null);
+      else alert("El evento se guardó localmente, pero los adjuntos necesitan conexión con Supabase.");
     }
     $("#eventModal").classList.remove("show"); render();
   }catch(e){alert("No se pudo guardar: "+e.message)}
@@ -1877,7 +2025,8 @@ document.addEventListener("DOMContentLoaded",()=>{
     home:["Inicio","Todo lo importante de casa en un solo sitio."],
     calendar:["Calendario","Agenda compartida, eventos y solapamientos."],
     finance:["Finanzas","Ingresos, gastos estructurales y capacidad libre."],
-    tasks:["Tareas","Responsabilidades familiares, fechas y seguimiento."]
+    tasks:["Tareas","Responsabilidades familiares, fechas y seguimiento."],
+    documents:["Documentos","Archivo familiar, fotos y adjuntos."]
   };
   const financeState={incomeSources:[],expenses:[],reviews:[],budgets:[],loaded:false};
   const MEMBER_KEY="familia_msm_active_member";
@@ -1915,7 +2064,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   function setModule(name){
     document.querySelectorAll(".module").forEach(x=>x.classList.remove("active"));
-    const ids={home:"homeModule",calendar:"calendarModule",finance:"financeModule",tasks:"tasksModule"};
+    const ids={home:"homeModule",calendar:"calendarModule",finance:"financeModule",tasks:"tasksModule",documents:"documentsModule"};
     const target=document.getElementById(ids[name]||"homeModule");
     if(target) target.classList.add("active");
     document.querySelectorAll(".bottom-nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.module===name));
@@ -1925,6 +2074,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     if(mt) mt.textContent=t;if(ms) ms.textContent=s;
     if(name==="finance"&&!financeState.loaded) loadFinance();
     if(name==="tasks"&&!taskState.loaded) loadTasks();
+    if(name==="documents"&&!documentState.loaded) loadDocuments();
     if(name==="home") renderHome();
     window.scrollTo({top:0,behavior:"smooth"});
   }
@@ -2066,7 +2216,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 
     document.getElementById("financeExpenseRows").innerHTML=financeState.expenses
       .slice().sort((a,b)=>Number(b.monthly_equivalent||0)-Number(a.monthly_equivalent||0))
-      .map(x=>`<div class="finance-expense-row"><div class="finance-expense-main"><b>${esc(x.name)}</b><small>${esc(x.category||"")} · ${esc(x.provider||"")}</small></div><div class="finance-expense-value"><b>${eur(x.monthly_equivalent)}</b><small>${esc(x.status||"")}</small></div></div>`).join("");
+      .map(x=>`<div class="finance-expense-row"><div class="finance-expense-main"><b>${esc(x.name)}</b><small>${esc(x.category||"")} · ${esc(x.provider||"")}</small></div><div class="expense-row-actions"><div class="finance-expense-value"><b>${eur(x.monthly_equivalent)}</b><small>${esc(x.status||"")}</small></div><button class="expense-attach-btn" type="button" data-expense-attach="${esc(x.id)}" data-expense-name="${esc(x.name)}" title="Adjuntar archivo">📎</button></div></div>`).join("");
   }
 
   function renderHomeFinance(){
@@ -2077,6 +2227,239 @@ document.addEventListener("DOMContentLoaded",()=>{
     if(s)s.textContent=`${eur(t.free)} libres al mes · ${pct(t.ratio)} comprometido`;
   }
 
+
+
+  const documentState={documents:[],links:[],loaded:false};
+  const DOC_BUCKET="family-documents";
+
+  function safeFileName(name){
+    return String(name||"archivo").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .replace(/[^a-zA-Z0-9._-]+/g,"-").replace(/-+/g,"-").replace(/^-|-$/g,"")||"archivo";
+  }
+  function formatBytes(bytes){
+    const n=Number(bytes||0); if(n<1024)return `${n} B`;
+    if(n<1048576)return `${(n/1024).toFixed(1)} KB`;
+    return `${(n/1048576).toFixed(1)} MB`;
+  }
+  function documentIcon(doc){
+    const m=String(doc.mime_type||"");
+    if(m.startsWith("image/"))return "🖼️";
+    if(m.includes("pdf"))return "📄";
+    if(m.includes("sheet")||m.includes("excel"))return "📊";
+    if(m.includes("word"))return "📝";
+    return "📎";
+  }
+  async function storageUpload(file){
+    if(file.size>25*1024*1024) throw new Error(`${file.name}: supera 25 MB`);
+    const owner=activeMember||"Familia";
+    const d=new Date(), ym=`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,"0")}`;
+    const path=`${owner}/${ym}/${uid()}-${safeFileName(file.name)}`;
+    const url=state.supabaseUrl.replace(/\/$/,"")+"/storage/v1/object/"+DOC_BUCKET+"/"+path;
+    const res=await fetch(url,{method:"POST",headers:{
+      "apikey":state.supabaseKey,"Authorization":"Bearer "+state.supabaseKey,
+      "Content-Type":file.type||"application/octet-stream","x-upsert":"false"
+    },body:file});
+    if(!res.ok) throw new Error(await res.text());
+    return path;
+  }
+  async function signedDocumentUrl(path){
+    const url=state.supabaseUrl.replace(/\/$/,"")+"/storage/v1/object/sign/"+DOC_BUCKET+"/"+path.split("/").map(encodeURIComponent).join("/");
+    const res=await fetch(url,{method:"POST",headers:{
+      "apikey":state.supabaseKey,"Authorization":"Bearer "+state.supabaseKey,"Content-Type":"application/json"
+    },body:JSON.stringify({expiresIn:3600})});
+    if(!res.ok) throw new Error(await res.text());
+    const data=await res.json();
+    const signed=data.signedURL||data.signedUrl||data.signed_url;
+    return signed?.startsWith("http")?signed:state.supabaseUrl.replace(/\/$/,"")+(signed||"");
+  }
+  async function removeStorageObject(path){
+    const url=state.supabaseUrl.replace(/\/$/,"")+"/storage/v1/object/"+DOC_BUCKET+"/"+path.split("/").map(encodeURIComponent).join("/");
+    const res=await fetch(url,{method:"DELETE",headers:{"apikey":state.supabaseKey,"Authorization":"Bearer "+state.supabaseKey}});
+    if(!res.ok && res.status!==404) throw new Error(await res.text());
+  }
+  async function loadDocuments(){
+    try{
+      const [docs,links]=await Promise.all([
+        api("family_documents?select=*&order=created_at.desc"),
+        api("family_document_links?select=*")
+      ]);
+      documentState.documents=docs||[]; documentState.links=links||[]; documentState.loaded=true;
+      renderDocuments(); updateDocumentsSummary();
+    }catch(err){
+      console.warn("Documentos:",err);
+      documentState.loaded=true; documentState.documents=[]; documentState.links=[];
+      renderDocuments(); updateDocumentsSummary();
+    }
+  }
+  function linksForDocument(id){return documentState.links.filter(x=>x.document_id===id)}
+  function documentsForEntity(type,id){
+    const ids=new Set(documentState.links.filter(x=>x.entity_type===type&&String(x.entity_id)===String(id)).map(x=>x.document_id));
+    return documentState.documents.filter(x=>ids.has(x.id));
+  }
+  function entityLabel(type,id){
+    if(type==="task") return taskState.items.find(x=>String(x.id)===String(id))?.title||"Tarea";
+    if(type==="event") return state.events.find(x=>String(x.id)===String(id))?.title||"Evento";
+    if(type==="expense") return financeState.expenses.find(x=>String(x.id)===String(id))?.name||"Gasto";
+    return "";
+  }
+  async function uploadFilesAndLink(files,entityType="",entityId="",notes=""){
+    const uploaded=[];
+    for(const file of files){
+      const path=await storageUpload(file);
+      let doc;
+      try{
+        const rows=await api("family_documents",{method:"POST",body:JSON.stringify({
+          title:file.name,original_name:file.name,storage_path:path,mime_type:file.type||null,
+          size_bytes:file.size||0,uploaded_by:activeMember||null,notes:notes||null
+        })});
+        doc=rows?.[0];
+        if(!doc)throw new Error("No se pudo crear el registro del documento");
+        if(entityType&&entityId){
+          const lrows=await api("family_document_links",{method:"POST",body:JSON.stringify({
+            document_id:doc.id,entity_type:entityType,entity_id:String(entityId)
+          })});
+          if(lrows?.[0])documentState.links.push(lrows[0]);
+        }
+        documentState.documents.unshift(doc); uploaded.push(doc);
+      }catch(err){
+        try{await removeStorageObject(path)}catch(_){}
+        throw err;
+      }
+    }
+    documentState.loaded=true; renderDocuments(); updateDocumentsSummary();
+    return uploaded;
+  }
+  function updateDocumentsSummary(){
+    const docs=documentState.documents, linkedIds=new Set(documentState.links.map(x=>x.document_id));
+    const images=docs.filter(x=>String(x.mime_type||"").startsWith("image/")).length;
+    const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=String(v)};
+    set("docTotalCount",docs.length);set("docLooseCount",docs.filter(x=>!linkedIds.has(x.id)).length);
+    set("docImageCount",images);set("docFileCount",docs.length-images);
+    const hs=document.getElementById("homeDocumentsSummary");
+    if(hs)hs.textContent=docs.length?`${docs.length} archivo${docs.length===1?"":"s"} · ${docs.filter(x=>!linkedIds.has(x.id)).length} sin asociar`:"Archivo familiar";
+  }
+  function linkChip(link){
+    const name=entityLabel(link.entity_type,link.entity_id);
+    const icon=link.entity_type==="task"?"✓":link.entity_type==="event"?"🗓":"€";
+    return `<span class="document-link-chip">${icon} ${esc(name)}</span>`;
+  }
+  function renderDocuments(){
+    const host=document.getElementById("documentList");if(!host)return;
+    const q=(document.getElementById("documentSearch")?.value||"").trim().toLowerCase();
+    const filter=document.getElementById("documentFilter")?.value||"all";
+    let docs=documentState.documents.filter(d=>{
+      const links=linksForDocument(d.id);
+      const matchQ=!q||`${d.title||""} ${d.original_name||""} ${d.notes||""} ${d.uploaded_by||""}`.toLowerCase().includes(q);
+      const matchF=filter==="all"||(filter==="unlinked"&&!links.length)||links.some(l=>l.entity_type===filter);
+      return matchQ&&matchF;
+    });
+    if(!docs.length){host.innerHTML='<div class="document-empty">No hay documentos con este filtro.</div>';return;}
+    host.innerHTML=docs.map(d=>{
+      const links=linksForDocument(d.id);
+      return `<div class="document-row">
+        <div class="document-icon">${documentIcon(d)}</div>
+        <div class="document-main">
+          <b>${esc(d.title||d.original_name)}</b>
+          <small>${esc(d.uploaded_by||"Familia")} · ${formatBytes(d.size_bytes)} · ${new Intl.DateTimeFormat("es-ES",{day:"2-digit",month:"short",year:"numeric"}).format(new Date(d.created_at))}</small>
+          ${d.notes?`<small>${esc(d.notes)}</small>`:""}
+          ${links.length?`<div class="document-links">${links.map(linkChip).join("")}</div>`:`<div class="document-links"><span class="document-link-chip">Sin asociar</span></div>`}
+        </div>
+        <div class="document-actions">
+          <button class="document-action-btn" type="button" data-doc-open="${esc(d.id)}" title="Abrir">↗</button>
+          <button class="document-action-btn" type="button" data-doc-delete="${esc(d.id)}" title="Eliminar">🗑</button>
+        </div>
+      </div>`;
+    }).join("");
+  }
+  async function openDocument(id){
+    const d=documentState.documents.find(x=>x.id===id);if(!d)return;
+    try{window.open(await signedDocumentUrl(d.storage_path),"_blank","noopener");}
+    catch(e){alert("No se pudo abrir el archivo: "+e.message)}
+  }
+  async function deleteDocument(id){
+    const d=documentState.documents.find(x=>x.id===id);if(!d||!confirm(`¿Eliminar "${d.original_name}"?`))return;
+    try{
+      await removeStorageObject(d.storage_path);
+      await api("family_documents?id=eq."+encodeURIComponent(id),{method:"DELETE"});
+      documentState.documents=documentState.documents.filter(x=>x.id!==id);
+      documentState.links=documentState.links.filter(x=>x.document_id!==id);
+      renderDocuments();updateDocumentsSummary();
+    }catch(e){alert("No se pudo eliminar: "+e.message)}
+  }
+  async function renderEntityAttachments(type,id,host){
+    if(!host)return;
+    if(!id){host.innerHTML='<span class="entity-attachment">Se adjuntarán al guardar</span>';return;}
+    if(!documentState.loaded)await loadDocuments();
+    const docs=documentsForEntity(type,id);
+    host.innerHTML=docs.length?docs.map(d=>`<span class="entity-attachment">📎 ${esc(d.original_name)} <button type="button" data-inline-doc-open="${esc(d.id)}">Abrir</button></span>`).join(""):'<span class="entity-attachment">Sin adjuntos</span>';
+  }
+  function populateDocumentEntities(type){
+    const field=document.getElementById("documentEntityField"),sel=document.getElementById("documentEntityId");
+    if(!type){field?.classList.add("hidden");if(sel)sel.innerHTML="";return;}
+    field?.classList.remove("hidden");
+    let rows=[];
+    if(type==="task") rows=taskState.items.map(x=>[x.id,x.title]);
+    if(type==="event") rows=state.events.map(x=>[x.id,`${x.date} · ${x.title}`]);
+    if(type==="expense") rows=financeState.expenses.map(x=>[x.id,x.name]);
+    if(sel)sel.innerHTML=rows.map(([id,name])=>`<option value="${esc(id)}">${esc(name)}</option>`).join("");
+  }
+  function openDocumentUpload(){
+    document.getElementById("documentUploadForm")?.reset();
+    document.getElementById("documentEntityField")?.classList.add("hidden");
+    document.getElementById("documentUploadError").textContent="";
+    document.getElementById("documentUploadModal").classList.add("show");
+  }
+  function closeDocumentUpload(){document.getElementById("documentUploadModal").classList.remove("show")}
+  async function submitDocumentUpload(e){
+    e.preventDefault();
+    const files=[...(document.getElementById("documentFiles")?.files||[])];
+    const type=document.getElementById("documentLinkType").value;
+    const entityId=type?document.getElementById("documentEntityId").value:"";
+    const err=document.getElementById("documentUploadError");err.textContent="";
+    if(!files.length){err.textContent="Selecciona al menos un archivo.";return;}
+    if(type&&!entityId){err.textContent="Selecciona el elemento al que quieres asociarlo.";return;}
+    try{
+      await uploadFilesAndLink(files,type,entityId,document.getElementById("documentNotes").value.trim());
+      closeDocumentUpload();
+    }catch(ex){err.textContent="No se pudo subir: "+ex.message}
+  }
+  function openEntityAttach(type,id,title){
+    document.getElementById("attachEntityType").value=type;document.getElementById("attachEntityId").value=id;
+    document.getElementById("entityAttachTitle").textContent=`Adjuntar a ${title||"elemento"}`;
+    document.getElementById("entityAttachFiles").value="";document.getElementById("entityAttachError").textContent="";
+    document.getElementById("entityAttachModal").classList.add("show");
+  }
+  function closeEntityAttach(){document.getElementById("entityAttachModal").classList.remove("show")}
+  async function submitEntityAttach(e){
+    e.preventDefault();
+    const type=document.getElementById("attachEntityType").value,id=document.getElementById("attachEntityId").value;
+    const files=[...(document.getElementById("entityAttachFiles")?.files||[])],err=document.getElementById("entityAttachError");err.textContent="";
+    if(!files.length){err.textContent="Selecciona al menos un archivo.";return;}
+    try{await uploadFilesAndLink(files,type,id,null);closeEntityAttach();}
+    catch(ex){err.textContent="No se pudo adjuntar: "+ex.message}
+  }
+
+  document.getElementById("newDocumentBtn")?.addEventListener("click",openDocumentUpload);
+  document.getElementById("closeDocumentUpload")?.addEventListener("click",closeDocumentUpload);
+  document.getElementById("cancelDocumentUpload")?.addEventListener("click",closeDocumentUpload);
+  document.getElementById("documentUploadForm")?.addEventListener("submit",submitDocumentUpload);
+  document.getElementById("documentLinkType")?.addEventListener("change",e=>populateDocumentEntities(e.target.value));
+  document.getElementById("documentSearch")?.addEventListener("input",renderDocuments);
+  document.getElementById("documentFilter")?.addEventListener("change",renderDocuments);
+  document.getElementById("documentList")?.addEventListener("click",e=>{
+    const op=e.target.closest("[data-doc-open]");if(op){openDocument(op.dataset.docOpen);return;}
+    const del=e.target.closest("[data-doc-delete]");if(del){deleteDocument(del.dataset.docDelete);}
+  });
+  document.addEventListener("click",e=>{
+    const op=e.target.closest("[data-inline-doc-open]");if(op)openDocument(op.dataset.inlineDocOpen);
+    const exp=e.target.closest("[data-expense-attach]");
+    if(exp)openEntityAttach("expense",exp.dataset.expenseAttach,exp.dataset.expenseName);
+  });
+  document.getElementById("closeEntityAttach")?.addEventListener("click",closeEntityAttach);
+  document.getElementById("cancelEntityAttach")?.addEventListener("click",closeEntityAttach);
+  document.getElementById("entityAttachForm")?.addEventListener("submit",submitEntityAttach);
+  document.getElementById("documentUploadModal")?.addEventListener("click",e=>{if(e.target.id==="documentUploadModal")closeDocumentUpload()});
+  document.getElementById("entityAttachModal")?.addEventListener("click",e=>{if(e.target.id==="entityAttachModal")closeEntityAttach()});
 
   const taskState={items:[],loaded:false};
 
@@ -2160,6 +2543,8 @@ document.addEventListener("DOMContentLoaded",()=>{
     document.getElementById("taskFormError").textContent="";
     document.getElementById("taskModalTitle").textContent=t?"Editar tarea":"Nueva tarea";
     document.getElementById("deleteTaskBtn").classList.toggle("hidden",!t);
+    const tf=document.getElementById("taskFiles");if(tf)tf.value="";
+    renderEntityAttachments("task",t?.id||"",document.getElementById("taskAttachedDocs"));
     document.getElementById("taskModal").classList.add("show");
   }
   function closeTaskModal(){document.getElementById("taskModal").classList.remove("show")}
@@ -2175,10 +2560,13 @@ document.addEventListener("DOMContentLoaded",()=>{
       const saved=data?.[0]||{...payload,id:id||crypto.randomUUID()};
       if(id){const i=taskState.items.findIndex(x=>x.id===id);if(i>=0)taskState.items[i]={...taskState.items[i],...saved};}
       else taskState.items.push(saved);
+      const taskFiles=[...(document.getElementById("taskFiles")?.files||[])];
+      if(taskFiles.length) await uploadFilesAndLink(taskFiles,"task",saved.id,null);
     }catch(err){
       const saved={...payload,id:id||crypto.randomUUID(),created_at:new Date().toISOString()};
       if(id){const i=taskState.items.findIndex(x=>x.id===id);if(i>=0)taskState.items[i]=saved;}else taskState.items.push(saved);
       localStorage.setItem("family_tasks_fallback",JSON.stringify(taskState.items));
+      if((document.getElementById("taskFiles")?.files||[]).length) alert("La tarea se guardó localmente, pero los adjuntos necesitan conexión con Supabase.");
     }
     closeTaskModal();renderTasks();renderHomeTasks();
   }
@@ -2234,6 +2622,7 @@ document.addEventListener("DOMContentLoaded",()=>{
       clearInterval(wait);
       renderHome();
       if(!financeState.loaded) loadFinance();
+      if(!documentState.loaded) loadDocuments();
     }
   },150);
 
