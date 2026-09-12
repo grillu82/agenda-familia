@@ -833,7 +833,7 @@ body:not(.module-calendar) .fab{display:none!important}
       </div>
       <div class="home-finance-kpis">
         <div><span>Ingresos</span><b id="homeIncome">—</b></div>
-        <div><span>Fijos</span><b id="homeFixed">—</b></div>
+        <div><span>Coste previsto</span><b id="homeFixed">—</b></div>
         <div><span>Libre</span><b id="homeFree">—</b></div>
       </div>
     </div>
@@ -848,11 +848,19 @@ body:not(.module-calendar) .fab{display:none!important}
         <span>Gastos estructurales / mes</span><b id="finFixed">—</b><small>Pulsa para ver detalle</small>
       </article>
       <article class="finance-kpi free">
-        <span>Dinero libre / mes</span><b id="finFree">—</b><small>Antes de gasto variable</small>
+        <span>Dinero libre / mes</span><b id="finFree">—</b><small>Tras fijos + comida</small>
       </article>
       <article class="finance-kpi ratio">
-        <span>% comprometido</span><b id="finRatio">—</b><small id="finRatioSub">Objetivo &lt; 50%</small>
+        <span>% comprometido</span><b id="finRatio">—</b><small id="finRatioSub">Fijos + presupuestos esenciales</small>
       </article>
+    </div>
+
+    <div class="dashboard-card">
+      <div class="dashboard-card-head">
+        <div><span class="eyebrow">PRESUPUESTOS ESENCIALES</span><h3>Gastos necesarios variables</h3></div>
+        <span id="financeBudgetTotal" class="small-chip">—</span>
+      </div>
+      <div id="financeBudgets" class="finance-radar"></div>
     </div>
 
     <div class="dashboard-card finance-health-card">
@@ -1720,9 +1728,9 @@ document.addEventListener("DOMContentLoaded",()=>{
     finance:["Finanzas","Ingresos, gastos estructurales y capacidad libre."],
     more:["Más","Nuevos módulos familiares irán apareciendo aquí."]
   };
-  const financeState={incomeSources:[],expenses:[],reviews:[],loaded:false};
+  const financeState={incomeSources:[],expenses:[],reviews:[],budgets:[],loaded:false};
 
-  const eur=n=>new Intl.NumberFormat("es-ES",{style:"currency",currency:"EUR",maximumFractionDigits:2}).format(Number(n||0));
+  const eur=n=>new Intl.NumberFormat("es-ES",{style:"currency",currency:"EUR",minimumFractionDigits:2,maximumFractionDigits:2,useGrouping:true}).format(Number(n||0));
   const pct=n=>new Intl.NumberFormat("es-ES",{style:"percent",maximumFractionDigits:1}).format(Number(n||0));
   const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
 
@@ -1780,22 +1788,25 @@ document.addEventListener("DOMContentLoaded",()=>{
   async function loadFinance(){
     try{
       if(!window.state?.supabaseUrl||!window.state?.supabaseKey) throw new Error("Sin conexión Supabase");
-      const [incomes,expenses,reviews]=await Promise.all([
+      const [incomes,expenses,reviews,budgets]=await Promise.all([
         api("finance_income_sources?select=*&active=eq.true&order=sort_order.asc"),
         api("finance_recurring_expenses?select=*&active=eq.true&order=monthly_equivalent.desc"),
-        api("finance_reviews?select=*&active=eq.true&order=priority.asc,sort_order.asc")
+        api("finance_reviews?select=*&active=eq.true&order=priority.asc,sort_order.asc"),
+        api("finance_budgets?select=*&active=eq.true&order=sort_order.asc")
       ]);
       financeState.incomeSources=incomes||[];
       financeState.expenses=expenses||[];
       financeState.reviews=reviews||[];
+      financeState.budgets=budgets||[];
       financeState.loaded=true;
     }catch(err){
       console.warn("Finance fallback:",err);
       financeState.incomeSources=[
-        {name:"Sergio",monthly_net:2500},{name:"María",monthly_net:2500}
+        {name:"Sergio",monthly_net:2250},{name:"María",monthly_net:2250}
       ];
       financeState.expenses=FINANCE_FALLBACK_EXPENSES;
       financeState.reviews=FINANCE_FALLBACK_REVIEWS;
+      financeState.budgets=[{name:"Comida",category:"Alimentación",monthly_budget:800,essential:true,active:true}];
       financeState.loaded=true;
     }
     renderFinance();
@@ -1830,8 +1841,10 @@ document.addEventListener("DOMContentLoaded",()=>{
   function totals(){
     const income=financeState.incomeSources.reduce((s,x)=>s+Number(x.monthly_net||0),0);
     const fixed=financeState.expenses.reduce((s,x)=>s+Number(x.monthly_equivalent||0),0);
+    const budgets=financeState.budgets.reduce((s,x)=>s+Number(x.monthly_budget||0),0);
     const annual=financeState.expenses.reduce((s,x)=>s+Number(x.annual_cost||0),0);
-    return {income,fixed,annual,free:income-fixed,ratio:income?fixed/income:0};
+    const costOfLiving=fixed+budgets;
+    return {income,fixed,budgets,costOfLiving,annual,free:income-costOfLiving,ratio:income?costOfLiving/income:0};
   }
 
   function renderFinance(){
@@ -1844,10 +1857,19 @@ document.addEventListener("DOMContentLoaded",()=>{
     document.getElementById("detailYear").textContent=eur(t.annual);
     document.getElementById("detailCount").textContent=String(financeState.expenses.length);
     document.getElementById("finProgressBar").style.width=Math.min(100,t.ratio*100)+"%";
+    const budgetTotal=document.getElementById("financeBudgetTotal");
+    if(budgetTotal) budgetTotal.textContent=eur(t.budgets)+"/mes";
+    const budgetHost=document.getElementById("financeBudgets");
+    if(budgetHost) budgetHost.innerHTML=financeState.budgets.map(x=>`
+      <div class="finance-radar-row">
+        <span class="finance-radar-dot" style="background:#16a34a"></span>
+        <div><b>${esc(x.name)}</b><small>${esc(x.category||"")} · ${x.essential?"Esencial":"Presupuesto"}</small></div>
+        <span class="finance-radar-priority">${eur(x.monthly_budget)}/mes</span>
+      </div>`).join("");
     const badge=document.getElementById("finHealthBadge");
     const health=t.ratio<.5?["SALUDABLE","good"]:t.ratio<.65?["VIGILAR","warn"]:["ALTO","bad"];
     badge.textContent=health[0];badge.className="health-badge "+health[1];
-    document.getElementById("finHealthText").textContent=`${pct(1-t.ratio)} de los ingresos queda disponible para gasto variable, ocio, viajes y ahorro.`;
+    document.getElementById("finHealthText").textContent=`Coste de vida previsto: ${eur(t.costOfLiving)}/mes. Queda ${pct(1-t.ratio)} de los ingresos para otros gastos, ocio, viajes y ahorro.`;
 
     const cats={};
     financeState.expenses.forEach(x=>cats[x.category||"Otros"]=(cats[x.category||"Otros"]||0)+Number(x.monthly_equivalent||0));
@@ -1873,7 +1895,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     if(!financeState.loaded){ loadFinance(); return; }
     const t=totals();
     const a=document.getElementById("homeIncome"),b=document.getElementById("homeFixed"),c=document.getElementById("homeFree"),s=document.getElementById("homeFinanceSummary");
-    if(a)a.textContent=eur(t.income);if(b)b.textContent=eur(t.fixed);if(c)c.textContent=eur(t.free);
+    if(a)a.textContent=eur(t.income);if(b)b.textContent=eur(t.costOfLiving);if(c)c.textContent=eur(t.free);
     if(s)s.textContent=`${eur(t.free)} libres al mes · ${pct(t.ratio)} comprometido`;
   }
 
