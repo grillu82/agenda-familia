@@ -925,6 +925,58 @@ body:not(.module-calendar) .fab{display:none!important}
 }
 </style>
 
+
+<style id="design-retouch-v7">
+.module-page-head{display:flex;align-items:flex-end;justify-content:space-between;margin:2px 2px 13px}
+.module-page-head h2{margin:3px 0 2px;font-size:28px;letter-spacing:-.035em}
+.module-page-head p{margin:0;color:var(--app-muted);font-size:11px}
+
+.home-indicator-list{display:grid;grid-template-columns:1fr;gap:10px}
+.home-indicator-wide{width:100%;padding:14px 15px}
+.home-card-details{display:grid;gap:7px;margin-top:10px}
+.home-detail-row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px;align-items:center;background:#f8fafc;border-radius:12px;padding:8px 9px}
+.home-detail-date{min-width:45px;font-size:9px;font-weight:900;color:#475569;text-transform:uppercase}
+.home-detail-main{min-width:0}.home-detail-main b{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.home-detail-main small{display:block;font-size:9px;color:var(--app-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.home-task-status-dot{width:8px;height:28px;border-radius:999px;background:#7c3aed}.home-detail-row.overdue .home-task-status-dot{background:#dc2626}
+.home-finance-mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0 6px}
+.home-finance-mini>div{min-width:0;background:#f8fafc;border-radius:12px;padding:9px}
+.home-finance-mini span{display:block;font-size:8px;color:var(--app-muted);font-weight:850;text-transform:uppercase}
+.home-finance-mini b{display:block;font-size:clamp(13px,4.2vw,18px);margin-top:3px;white-space:nowrap;letter-spacing:-.03em}
+.home-detail-empty{font-size:10px;color:var(--app-muted);padding:6px 2px}
+
+#calendarModule .hero{margin-bottom:4px!important}
+.calendar-filter-pills{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto;gap:6px!important;margin:0!important;padding:0 1px 5px!important;scrollbar-width:none}
+.calendar-filter-pills::-webkit-scrollbar{display:none}
+.calendar-filter-pills .person-pill{flex:0 0 auto;padding:6px 10px!important;font-size:10px!important;min-height:30px;box-shadow:none}
+.calendar-filter-pills .person-pill.active{outline:none!important;box-shadow:0 0 0 2px rgba(37,99,235,.16) inset}
+#calendarModule .toolbar{position:relative!important;top:auto!important;margin:0 0 7px!important;border-radius:16px!important;padding:6px!important}
+#calendarModule .toolbar button{padding:7px 9px!important;border-radius:11px!important}
+#calendarModule .month-title{font-size:14px!important}
+
+.calendar-day-focus{background:#fff;border:1px solid var(--app-line);border-radius:16px;padding:11px;margin:0 0 9px;box-shadow:var(--app-shadow)}
+.calendar-day-focus-head h3{margin:2px 0 7px;font-size:14px;text-transform:capitalize}
+.calendar-selected-events{display:grid;gap:6px}
+.selected-event{width:100%;display:grid;grid-template-columns:70px minmax(0,1fr);gap:8px;align-items:center;text-align:left;border:0;border-left:4px solid currentColor;border-radius:11px;padding:8px;background:#f8fafc;color:var(--app-ink)}
+.selected-event-time{font-size:9px;font-weight:850;color:#64748b}.selected-event-copy{min-width:0}.selected-event-copy b{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.selected-event-copy small{display:block;font-size:9px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.calendar-selected-empty{font-size:10px;color:var(--app-muted);padding:4px 0}
+
+.calendar-day.today .calendar-date{background:#2563eb;color:#fff;border-radius:999px;width:24px;height:24px;display:grid;place-items:center}
+.calendar-day.selected{box-shadow:inset 0 0 0 2px rgba(37,99,235,.3)}
+.cal-event{display:block!important;text-align:left!important;overflow:hidden!important}
+.cal-event-title{display:block;font-size:9px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-event-desc{display:block;font-size:7px;line-height:1.15;margin-top:1px;opacity:.78;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+#quickModal{display:none!important}
+.smart-actions{display:none!important}
+
+@media(max-width:560px){
+  .home-indicator-wide{padding:13px}
+  .home-finance-mini{gap:5px}
+  .home-finance-mini>div{padding:8px 6px}
+  .calendar-day-focus{padding:9px}
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -948,29 +1000,31 @@ body:not(.module-calendar) .fab{display:none!important}
       <input id="homePhotoInput" type="file" accept="image/*" hidden>
     </div>
 
-    <div class="home-indicator-grid">
-      <button class="home-indicator calendar" data-open-module="calendar" type="button">
+    <div class="home-indicator-list">
+      <button class="home-indicator home-indicator-wide calendar" data-open-module="calendar" type="button">
         <div class="home-indicator-head"><span class="indicator-icon">🗓️</span><span>Calendario</span><b>›</b></div>
         <strong id="homeCalendarSummary">Cargando…</strong>
-        <small>Ver agenda familiar</small>
+        <div id="homeCalendarDetails" class="home-card-details"></div>
       </button>
 
-      <button class="home-indicator tasks" data-open-module="tasks" type="button">
+      <button class="home-indicator home-indicator-wide tasks" data-open-module="tasks" type="button">
         <div class="home-indicator-head"><span class="indicator-icon">✓</span><span>Tareas</span><b>›</b></div>
         <strong id="homeTasksSummary">Cargando…</strong>
-        <small>Mis tareas y seguimiento</small>
+        <div id="homeTaskDetails" class="home-card-details"></div>
       </button>
 
-      <button class="home-indicator finance" data-open-module="finance" type="button">
+      <button class="home-indicator home-indicator-wide finance" data-open-module="finance" type="button">
         <div class="home-indicator-head"><span class="indicator-icon">€</span><span>Finanzas</span><b>›</b></div>
         <strong id="homeFinanceSummary">Cargando…</strong>
-        <small id="homeFinanceMeta">Ingresos y coste previsto</small>
-        <span class="home-finance-hidden" aria-hidden="true">
-          <span id="homeIncome"></span><span id="homeFixed"></span><span id="homeFree"></span>
-        </span>
+        <div class="home-finance-mini">
+          <div><span>Ingresos</span><b id="homeIncome">—</b></div>
+          <div><span>Previsto</span><b id="homeFixed">—</b></div>
+          <div><span>Libre</span><b id="homeFree">—</b></div>
+        </div>
+        <small id="homeFinanceMeta"></small>
       </button>
 
-      <button class="home-indicator documents" data-open-module="documents" type="button">
+      <button class="home-indicator home-indicator-wide documents" data-open-module="documents" type="button">
         <div class="home-indicator-head"><span class="indicator-icon">📁</span><span>Documentos</span><b>›</b></div>
         <strong id="homeDocumentsSummary">Cargando…</strong>
         <small>Fotos, archivos y adjuntos</small>
@@ -982,6 +1036,13 @@ body:not(.module-calendar) .fab{display:none!important}
   </section>
 
   <section id="financeModule" class="module">
+    <div class="module-page-head">
+      <div>
+        <span class="eyebrow">ECONOMÍA FAMILIAR</span>
+        <h2>Finanzas</h2>
+        <p>Ingresos, gastos y capacidad libre del hogar.</p>
+      </div>
+    </div>
     <div class="finance-kpi-grid">
       <article class="finance-kpi income">
         <span>Ingresos netos / mes</span><b id="finIncome">—</b><small id="finIncomeSub">Sergio + María</small>
@@ -1119,26 +1180,21 @@ body:not(.module-calendar) .fab{display:none!important}
   </section>
 
   <section id="calendarModule" class="module">
+  <div class="module-page-head calendar-page-head">
+    <div>
+      <span class="eyebrow">AGENDA FAMILIAR</span>
+      <h2>Calendario</h2>
+    </div>
+  </div>
   <section class="hero">
     <button id="installAppBtn" class="top-install" type="button" aria-label="Instalar app" title="Instalar app">📲</button>
     <button id="settingsBtn" class="top-settings" type="button" aria-label="Ajustes protegidos" title="Ajustes protegidos">⚙️</button>
     <h1>Familia MSM ❤️</h1>
     <p>Quién está, quién sale y dónde se nos cruza la agenda.</p>
-    <div class="calendar-filter-compact">
-      <span>Mostrar</span>
-      <select id="calendarPersonFilter" aria-label="Filtrar calendario">
-        <option value="Todos">Todos</option>
-        <option value="Sergio">Sergio</option>
-        <option value="María">María</option>
-        <option value="Martina">Martina</option>
-        <option value="Trabajo">Trabajo</option>
-        <option value="Familia">Familia</option>
-      </select>
-    </div>
-    <div class="people calendar-legacy-filters" aria-hidden="true">
+    <div class="people calendar-filter-pills" aria-label="Filtrar calendario">
       <button class="person-pill active" data-person="Todos">Todos</button>
       <button class="person-pill" data-person="Sergio">Sergio</button>
-      <button class="person-pill" data-person="María">Maria</button>
+      <button class="person-pill" data-person="María">María</button>
       <button class="person-pill" data-person="Martina">Martina</button>
       <button class="person-pill" data-person="Trabajo">Trabajo</button>
       <button class="person-pill" data-person="Familia">Familia</button>
@@ -1152,10 +1208,14 @@ body:not(.module-calendar) .fab{display:none!important}
     <button id="nextBtn">›</button>
   </div>
 
-
-  <div class="smart-actions">
-    <button id="quickCreateBtn" class="quick-create-btn" type="button">✨ Asistente de eventos</button>
+  <div id="calendarDayFocus" class="calendar-day-focus">
+    <div class="calendar-day-focus-head">
+      <div><span class="eyebrow">DÍA SELECCIONADO</span><h3 id="calendarSelectedDate">Hoy</h3></div>
+    </div>
+    <div id="calendarSelectedEvents" class="calendar-selected-events"></div>
   </div>
+
+
 
   <div class="view-switch" aria-label="Vista de agenda">
     <button type="button" id="listViewBtn" class="active">☷ Lista</button>
@@ -1429,7 +1489,7 @@ INITIAL_EVENTS.push({id:"fed0909",title:"Entreno Federación",person:"Martina",c
 const state = {
   events: [],
   filter:"Todos",
-  month:new Date("2026-09-01T12:00:00"),
+  month:(()=>{const d=new Date();d.setDate(1);d.setHours(12,0,0,0);return d;})(),
   remote:false,
   supabaseUrl:localStorage.getItem("family_supabase_url")||"https://gmmnbaweuycouhgsrzfk.supabase.co",
   supabaseKey:localStorage.getItem("family_supabase_key")||"sb_publishable_GXhOOJ_LmLm6zhkdardL8Q_luvm72Ce"
@@ -1527,7 +1587,10 @@ function render(){
   normalizeDisplayPersons();
   $("#monthTitle").textContent=fmtMonth(state.month);
   const evs=monthEvents();
-  const {map,alerts}=conflictInfo(evs);
+  const todayIso=(()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`})();
+  const futureEvs=evs.filter(e=>e.date>=todayIso);
+  const {map}=conflictInfo(evs);
+  const {alerts}=conflictInfo(futureEvs);
   $("#alerts").innerHTML=alerts.slice(0,4).map(a=>`<div class="alert ${a.type}">${a.type==="danger"?"⚠️":"⏱️"}<div>${a.text}</div></div>`).join("");
   const groups={}; evs.forEach(e=>(groups[e.date]??=[]).push(e));
   const dates=Object.keys(groups);
@@ -1609,18 +1672,10 @@ function storedEventNotes(notes,weekly){
 document.querySelectorAll(".person-pill").forEach(b=>b.onclick=()=>{
   document.querySelectorAll(".person-pill").forEach(x=>x.classList.remove("active"));b.classList.add("active");state.filter=b.dataset.person;render();
 });
-const calendarPersonFilter=document.getElementById("calendarPersonFilter");
-if(calendarPersonFilter){
-  calendarPersonFilter.value=state.filter||"Todos";
-  calendarPersonFilter.addEventListener("change",()=>{
-    const target=[...document.querySelectorAll(".person-pill")].find(b=>b.dataset.person===calendarPersonFilter.value);
-    if(target) target.click();
-    else {state.filter=calendarPersonFilter.value;render();}
-  });
-}
+
 $("#prevBtn").onclick=()=>{state.month.setMonth(state.month.getMonth()-1);render()}
 $("#nextBtn").onclick=()=>{state.month.setMonth(state.month.getMonth()+1);render()}
-$("#todayBtn").onclick=()=>{state.month=new Date();state.month.setDate(1);render()}
+$("#todayBtn").onclick=()=>{const d=new Date();state.month=new Date(d.getFullYear(),d.getMonth(),1,12);selectedCalendarDate=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;render();renderCalendar();}
 
 function openEvent(id=null){
   const e=id?state.events.find(x=>x.id===id):null;
@@ -1730,6 +1785,30 @@ loadEvents();
     if(typeof state!=="undefined" && state.month instanceof Date) return new Date(state.month);
     return new Date();
   }
+  let selectedCalendarDate=(()=>{
+    const d=new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  })();
+
+  function renderSelectedCalendarDay(){
+    const title=document.getElementById("calendarSelectedDate"),host=document.getElementById("calendarSelectedEvents");
+    if(!title||!host)return;
+    const d=new Date(selectedCalendarDate+"T12:00:00");
+    const today=new Date();const todayIso=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
+    title.textContent=(selectedCalendarDate===todayIso?"Hoy · ":"")+new Intl.DateTimeFormat("es-ES",{weekday:"long",day:"numeric",month:"long"}).format(d);
+    const rows=(state.events||[]).filter(e=>e.date===selectedCalendarDate&&(state.filter==="Todos"||e.person===state.filter))
+      .sort((a,b)=>(a.allDay?-1:1)||(a.startTime||"").localeCompare(b.startTime||""));
+    host.innerHTML=rows.length?rows.map(e=>{
+      const time=e.allDay?"Todo el día":(e.startTime+(e.endTime?" – "+e.endTime:""));
+      const desc=cleanEventNotes(e.notes||"");
+      return `<button type="button" class="selected-event ${personClass(e.person)}" data-selected-event="${escapeHtml(e.id)}">
+        <span class="selected-event-time">${escapeHtml(time)}</span>
+        <span class="selected-event-copy"><b>${escapeHtml(e.title)}</b><small>${escapeHtml(e.person)}${desc?` · ${escapeHtml(desc)}`:""}</small></span>
+      </button>`;
+    }).join(""):'<div class="calendar-selected-empty">No hay eventos este día.</div>';
+    host.querySelectorAll("[data-selected-event]").forEach(b=>b.onclick=()=>openEvent(b.dataset.selectedEvent));
+  }
+
   function renderCalendar(){
     const grid=document.getElementById('calendarGrid');
     if(!grid || typeof state==='undefined') return;
@@ -1737,26 +1816,36 @@ loadEvents();
     const first=new Date(y,m,1,12), offset=(first.getDay()+6)%7;
     const start=new Date(y,m,1-offset,12);
     const evs=(state.events||[]).filter(e=>state.filter==='Todos'||e.person===state.filter);
+    const now=new Date();
+    const todayIso=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
     grid.innerHTML='';
     for(let i=0;i<42;i++){
       const d=new Date(start); d.setDate(start.getDate()+i);
       const iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
       const cell=document.createElement('div');
-      cell.className='calendar-day'+(d.getMonth()!==m?' other-month':'');
+      cell.className='calendar-day'+(d.getMonth()!==m?' other-month':'')+(iso===todayIso?' today':'')+(iso===selectedCalendarDate?' selected':'');
+      cell.dataset.date=iso;
       const num=document.createElement('div'); num.className='calendar-date'; num.textContent=d.getDate(); cell.appendChild(num);
       const list=evs.filter(e=>e.date===iso).sort((a,b)=>(a.startTime||'99:99').localeCompare(b.startTime||'99:99'));
-      const limit=window.innerWidth<=560?4:5;
+      const limit=window.innerWidth<=560?3:5;
       list.slice(0,limit).forEach(e=>{
         const b=document.createElement('button'); b.type='button'; b.className='cal-event '+pclass(e.person);
         const t=e.allDay?'':(e.startTime?e.startTime.slice(0,5)+' ': '');
-        b.textContent=t+(e.title||'Evento');
-        b.title=(e.person==='María'?'Maria':e.person)+' · '+(e.title||'Evento');
-        b.onclick=()=>{ if(typeof openEvent==='function') openEvent(e.id); };
+        const desc=cleanEventNotes(e.notes||"");
+        b.innerHTML=`<span class="cal-event-title">${escapeHtml(t+(e.title||'Evento'))}</span>${desc?`<span class="cal-event-desc">${escapeHtml(desc)}</span>`:""}`;
+        b.title=(e.person==='María'?'Maria':e.person)+' · '+(e.title||'Evento')+(desc?' · '+desc:'');
+        b.onclick=(ev)=>{ev.stopPropagation(); if(typeof openEvent==='function') openEvent(e.id);};
         cell.appendChild(b);
       });
       if(list.length>limit){const more=document.createElement('div');more.className='cal-more';more.textContent='+'+(list.length-limit);cell.appendChild(more)}
+      cell.addEventListener('click',()=>{
+        selectedCalendarDate=iso;
+        renderSelectedCalendarDay();
+        renderCalendar();
+      });
       grid.appendChild(cell);
     }
+    renderSelectedCalendarDay();
   }
   function setView(mode){
     const agenda=document.getElementById('agenda'), cal=document.getElementById('calendarView');
@@ -2189,18 +2278,22 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   function renderHomeEvents(){
     const host=document.getElementById("homeUpcomingEvents");
-    if(!host||!window.state) return;
+    if(!window.state) return;
     const today=new Date();today.setHours(0,0,0,0);
-    const items=(state.events||[]).filter(e=>new Date(e.date+"T12:00:00")>=today).sort((a,b)=>(a.date+(a.startTime||"")).localeCompare(b.date+(b.startTime||""))).slice(0,4);
+    const items=(state.events||[]).filter(e=>new Date(e.date+"T12:00:00")>=today)
+      .sort((a,b)=>(a.date+(a.startTime||"")).localeCompare(b.date+(b.startTime||""))).slice(0,2);
     const summary=document.getElementById("homeCalendarSummary");
-    if(summary) summary.textContent=items.length?`${items.length} próximos eventos`:"Sin eventos próximos";
-    if(!items.length){host.innerHTML='<div class="muted-copy">No hay próximos eventos.</div>';return;}
-    host.innerHTML=items.map(e=>{
-      const dd=new Date(e.date+"T12:00:00");
-      const day=dd.getDate(), mon=new Intl.DateTimeFormat("es-ES",{month:"short"}).format(dd).replace(".","");
-      const time=e.allDay?"Todo el día":(e.startTime||"Hora pendiente");
-      return `<div class="home-event"><div class="home-event-date"><b>${day}</b>${esc(mon)}</div><div class="home-event-copy"><b>${esc(e.title)}</b><small>${esc(e.person)} · ${esc(time)}</small></div></div>`;
-    }).join("");
+    const details=document.getElementById("homeCalendarDetails");
+    if(summary) summary.textContent=items.length?`${items.length} próximo${items.length===1?" evento":"s eventos"}`:"Sin eventos próximos";
+    if(details){
+      details.innerHTML=items.length?items.map(e=>{
+        const d=new Date(e.date+"T12:00:00");
+        const when=new Intl.DateTimeFormat("es-ES",{day:"2-digit",month:"short"}).format(d).replace(".","");
+        const time=e.allDay?"Todo el día":(e.startTime||"");
+        return `<div class="home-detail-row"><span class="home-detail-date">${esc(when)}</span><span class="home-detail-main"><b>${esc(e.title)}</b><small>${esc(e.person)}${time?` · ${esc(time)}`:""}</small></span></div>`;
+      }).join(""):'<div class="home-detail-empty">No hay próximos eventos.</div>';
+    }
+    if(host)host.innerHTML="";
   }
 
   async function loadFinance(){
@@ -2314,9 +2407,9 @@ document.addEventListener("DOMContentLoaded",()=>{
     const t=totals();
     const a=document.getElementById("homeIncome"),b=document.getElementById("homeFixed"),c=document.getElementById("homeFree"),s=document.getElementById("homeFinanceSummary");
     if(a)a.textContent=eur(t.income);if(b)b.textContent=eur(t.costOfLiving);if(c)c.textContent=eur(t.free);
-    if(s)s.textContent=`${eur(t.free)} libres`;
+    if(s)s.textContent=`${pct(t.ratio)} comprometido`;
     const meta=document.getElementById("homeFinanceMeta");
-    if(meta) meta.textContent=`Ingresos ${eur(t.income)} · previsto ${eur(t.costOfLiving)}`;
+    if(meta) meta.textContent="Resumen mensual";
   }
 
 
@@ -2611,18 +2704,19 @@ document.addEventListener("DOMContentLoaded",()=>{
     }).join("");
   }
   function renderHomeTasks(){
-    const sum=document.getElementById("homeTasksSummary"),host=document.getElementById("homeTaskList");
+    const sum=document.getElementById("homeTasksSummary"),details=document.getElementById("homeTaskDetails");
     if(!taskState.loaded){if(sum)sum.textContent="Cargando tareas…";loadTasks();return;}
     const allActive=sortTasks(taskState.items.filter(x=>!["Hecha","Cancelada"].includes(x.status)));
     const active=activeMember?allActive.filter(x=>x.assignee===activeMember):allActive;
     const overdue=active.filter(isTaskOverdue).length;
-    if(sum)sum.textContent=activeMember?(overdue?`${activeMember}: ${active.length} activas · ${overdue} vencida${overdue===1?"":"s"}`:`${activeMember}: ${active.length} tarea${active.length===1?"":"s"} activa${active.length===1?"":"s"}`):(overdue?`${active.length} activas · ${overdue} vencidas`:`${active.length} tareas activas`);
-    if(!host)return;
-    if(!active.length){host.innerHTML='<div class="muted-copy">No hay tareas pendientes.</div>';return;}
-    host.innerHTML=active.slice(0,4).map(t=>{
-      const over=isTaskOverdue(t),d=t.due_date||t.task_date;
-      return `<div class="home-task-row ${over?"overdue":""}"><span class="home-task-dot"></span><div><b>${esc(t.title)}</b><small>${esc(t.assignee)} · ${over?"Vencida":esc(t.status)}</small></div><span class="home-task-date">${d?taskDateLabel(d):""}</span></div>`;
-    }).join("");
+    if(sum)sum.textContent=overdue?`${active.length} activas · ${overdue} vencida${overdue===1?"":"s"}`:`${active.length} tarea${active.length===1?"":"s"} activa${active.length===1?"":"s"}`;
+    if(details){
+      const rows=active.slice(0,2);
+      details.innerHTML=rows.length?rows.map(t=>{
+        const d=t.due_date||t.task_date;
+        return `<div class="home-detail-row ${isTaskOverdue(t)?"overdue":""}"><span class="home-task-status-dot"></span><span class="home-detail-main"><b>${esc(t.title)}</b><small>${esc(t.assignee)} · ${isTaskOverdue(t)?"Vencida":esc(t.status)}${d?` · ${taskDateLabel(d)}`:""}</small></span></div>`;
+      }).join(""):'<div class="home-detail-empty">No hay tareas pendientes.</div>';
+    }
   }
   function openTaskModal(t=null){
     document.getElementById("taskId").value=t?.id||"";
